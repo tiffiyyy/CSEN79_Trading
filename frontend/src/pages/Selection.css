@@ -1,0 +1,57 @@
+.page {
+    display: flex; 
+    text-align: center;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-left: 2rem; 
+    padding-top: 4rem; 
+}
+
+.account-box {
+    display: flex; 
+    flex-direction: row;
+    gap: 2rem; 
+}
+
+.selections-box {
+    display: flex; 
+    flex-direction: row;
+    gap: 2rem; 
+    padding-top: 1rem; 
+    padding-bottom: 1rem; 
+}
+
+.selections {
+    display: flex; 
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.selections select {
+    margin-top: 0rem; 
+}
+
+.est-value {
+    margin-top: 4rem; 
+}
+
+.search {
+    display: flex; 
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.search-box {
+    width: 6rem; 
+    height: 2rem; 
+}
+
+.numShares {
+    width: 6rem; 
+    height: 2rem; 
+}
+
+.numShares::-webkit-outer-spin-button,
+.numShares::-webkit-inner-spin-button {
+    margin: 0;
+}

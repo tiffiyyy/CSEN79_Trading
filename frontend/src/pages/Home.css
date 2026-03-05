@@ -1,0 +1,8 @@
+.page {
+    display: flex; 
+    text-align: center;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-left: 2rem; 
+    padding-top: 4rem; 
+}

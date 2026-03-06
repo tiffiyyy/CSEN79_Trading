@@ -1,16 +1,19 @@
 .page {
-    display: flex; 
+    display: flex;
     text-align: center;
     flex-direction: column;
     min-height: 100vh;
-    padding-left: 2rem; 
-    padding-top: 4rem; 
+    padding-left: 2rem;
+    padding-top: 4rem;
+    background-color: #0a0a0b;
+    color: #e4e4e7;
 }
 
 .account-box {
     display: flex; 
     flex-direction: row;
     gap: 2rem; 
+    justify-content: center;
 }
 
 .selections-box {
@@ -19,6 +22,7 @@
     gap: 2rem; 
     padding-top: 1rem; 
     padding-bottom: 1rem; 
+    justify-content: center;
 }
 
 .selections {

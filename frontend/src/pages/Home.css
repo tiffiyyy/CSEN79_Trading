@@ -1,8 +1,108 @@
-.page {
-    display: flex; 
-    text-align: center;
-    flex-direction: column;
-    min-height: 100vh;
-    padding-left: 2rem; 
-    padding-top: 4rem; 
+/* --- Layout --- */
+.home {
+  min-height: 100vh;
+  background: #0a0a0b;
+  color: #e4e4e7;
+}
+
+/* --- Hero --- */
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  padding: 4rem 1.5rem;
+  overflow: hidden;
+  will-change: opacity, transform;
+}
+
+.scroll-fade {
+  transition: opacity 0.12s ease-out, transform 0.12s ease-out;
+}
+
+.glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80vmin;
+  height: 80vmin;
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 50%,
+    rgba(59, 130, 246, 0.08) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.hero-title {
+  position: relative;
+  margin: 0;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.title-accent {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  position: relative;
+  margin: 1.25rem 0 2rem;
+  max-width: 28ch;
+  font-size: 1.125rem;
+  color: #a1a1aa;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.actions {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.btn--primary {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+  border: none;
+}
+
+.btn--primary:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.35);
+}
+
+.btn--outline {
+  background: transparent;
+  color: #e4e4e7;
+  border: 1px solid #3f3f46;
+}
+
+.btn--outline:hover {
+  border-color: #52525b;
+  background: rgba(255, 255, 255, 0.04);
 }

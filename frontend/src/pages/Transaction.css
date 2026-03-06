@@ -1,8 +1,10 @@
 .page {
-    display: flex; 
+    display: flex;
     text-align: center;
     flex-direction: column;
     min-height: 100vh;
-    padding-left: 2rem; 
-    padding-top: 4rem; 
+    padding-left: 2rem;
+    padding-top: 4rem;
+    background-color: #0a0a0b;
+    color: #e4e4e7;
 }

@@ -8,12 +8,25 @@
     text-align: left;
 }
 
+/* Match Profile page spacing: same gap between header and title */
+.page.selection-page {
+    padding: 5rem 1.5rem 0;
+}
+
 .page__title {
     text-align: center;
-    margin: 0 0 1.5rem;
+    margin: 0 0 0.25rem;
     font-size: 1.75rem;
     font-weight: 700;
     color: #e4e4e7;
+}
+
+.selection-balance {
+    text-align: center;
+    margin: 0 0 1.5rem;
+    font-size: 0.9375rem;
+    color: #c4a574;
+    font-weight: 600;
 }
 
 .selection-row {
@@ -36,6 +49,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 1.5rem;
 }
 
@@ -157,12 +171,13 @@
     margin: 0;
 }
 
-/* Inventory panel – below columns */
+/* Inventory panel – below form, with more space above */
 .selection-inventory-wrap {
     max-width: 900px;
-    margin: 2rem auto 0;
+    margin: 4rem auto 0;
     margin-bottom: 4rem;
     padding-bottom: 2rem;
+    padding-top: 1rem;
     width: 100%;
 }
 

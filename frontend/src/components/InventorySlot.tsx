@@ -1,5 +1,10 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import "./InventorySlot.css";
+
+const STAR_BURST_COUNT = 24;
+const PLUS_ONE_COUNT = 8;
+const BURST_DURATION_MS = 800;
+const PLUS_ONE_DURATION_MS = 2200;
 
 export interface Holding {
   id: string;
@@ -15,12 +20,39 @@ export interface Holding {
 interface InventorySlotProps {
   holding?: Holding | null;
   isSpecialSlot?: boolean;
+  onStarClick?: () => void;
 }
 
-export function InventorySlot({ holding, isSpecialSlot }: InventorySlotProps) {
+interface Burst { id: number; x: number; y: number }
+
+export function InventorySlot({ holding, isSpecialSlot, onStarClick }: InventorySlotProps) {
   const [popupOpen, setPopupOpen] = useState(false);
+  const [bursts, setBursts] = useState<Burst[]>([]);
+  const [plusOnes, setPlusOnes] = useState<Burst[]>([]);
+  const nextBurstIdRef = useRef(0);
+  const timeoutsRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
 
   const closePopup = useCallback(() => setPopupOpen(false), []);
+
+  const handleStarClick = useCallback((e: React.MouseEvent) => {
+    onStarClick?.();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const id = nextBurstIdRef.current++;
+    setBursts((prev) => [...prev, { id, x, y }]);
+    const t = setTimeout(() => {
+      setBursts((prev) => prev.filter((b) => b.id !== id));
+      timeoutsRef.current.delete(id);
+    }, BURST_DURATION_MS);
+    timeoutsRef.current.set(id, t);
+    const plusId = nextBurstIdRef.current++;
+    setPlusOnes((prev) => [...prev, { id: plusId, x, y }]);
+    const tPlus = setTimeout(() => {
+      setPlusOnes((prev) => prev.filter((b) => b.id !== plusId));
+    }, PLUS_ONE_DURATION_MS);
+    timeoutsRef.current.set(plusId, tPlus);
+  }, [onStarClick]);
 
   useEffect(() => {
     if (!popupOpen) return;
@@ -30,6 +62,13 @@ export function InventorySlot({ holding, isSpecialSlot }: InventorySlotProps) {
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
   }, [popupOpen, closePopup]);
+
+  useEffect(() => {
+    return () => {
+      timeoutsRef.current.forEach((t) => clearTimeout(t));
+      timeoutsRef.current.clear();
+    };
+  }, []);
 
   if (holding) {
     return (
@@ -71,11 +110,68 @@ export function InventorySlot({ holding, isSpecialSlot }: InventorySlotProps) {
   }
 
   return (
-    <div className="inventory-slot">
-      {isSpecialSlot && (
-        <span className="inventory-slot__star" aria-label="Special" />
-      )}
-    </div>
+    <>
+      <button
+        type="button"
+        className="inventory-slot inventory-slot--star-btn"
+        onClick={isSpecialSlot ? handleStarClick : undefined}
+        aria-label="Sparkle"
+      >
+        {isSpecialSlot && (
+          <span className="inventory-slot__star" aria-hidden />
+        )}
+      </button>
+      {bursts.map((burst) => (
+        <div key={burst.id} className="star-burst-container" aria-hidden>
+          {Array.from({ length: STAR_BURST_COUNT }, (_, i) => {
+            const angle = (i / STAR_BURST_COUNT) * 2 * Math.PI + Math.random() * 0.5;
+            const distance = 50 + Math.random() * 60;
+            const dx = Math.cos(angle) * distance;
+            const dy = Math.sin(angle) * distance;
+            return (
+              <span
+                key={i}
+                className="star-burst-particle"
+                style={
+                  {
+                    left: burst.x,
+                    top: burst.y,
+                    "--dx": `${dx}px`,
+                    "--dy": `${dy}px`,
+                  } as React.CSSProperties & { "--dx": string; "--dy": string }
+                }
+              />
+            );
+          })}
+        </div>
+      ))}
+      {plusOnes.map((plus) => (
+        <div key={plus.id} className="star-burst-container star-plus-one-container" aria-hidden>
+          {Array.from({ length: PLUS_ONE_COUNT }, (_, i) => {
+            const angle = Math.random() * 2 * Math.PI;
+            const distance = 40 + Math.random() * 80;
+            const dx = Math.cos(angle) * distance;
+            const dy = Math.sin(angle) * distance;
+            return (
+              <span
+                key={i}
+                className="star-burst-plus-one"
+                style={
+                  {
+                    left: plus.x,
+                    top: plus.y,
+                    "--dx": `${dx}px`,
+                    "--dy": `${dy}px`,
+                  } as React.CSSProperties & { "--dx": string; "--dy": string }
+                }
+              >
+                +$1
+              </span>
+            );
+          })}
+        </div>
+      ))}
+    </>
   );
 }
 

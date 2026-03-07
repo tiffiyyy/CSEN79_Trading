@@ -9,7 +9,7 @@ using namespace std;
 class Market {
    private:
     unordered_map<string, Stock> stocksMap;
-    unordered_map<int, User> usersMap;
+    unordered_map<string, User> usersMap;
 
    public:
     Market() = default;
@@ -26,3 +26,5 @@ class Market {
     bool placeOrder(const Order* order);
     void matchTicker(const string& ticker);
 };
+
+

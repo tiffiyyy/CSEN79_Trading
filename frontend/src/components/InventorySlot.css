@@ -1,0 +1,214 @@
+.inventory-slot {
+  aspect-ratio: 1;
+  min-height: 36px;
+  background: #2a2825;
+  border: 2px solid #5c4a32;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0;
+  padding: 0.2rem;
+  box-sizing: border-box;
+}
+
+.inventory-slot--filled {
+  position: relative;
+  cursor: pointer;
+  border-color: #8b7355;
+  background: #3d3528;
+  font-family: inherit;
+  color: #e8e0d0;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.inventory-slot--filled:hover {
+  background: #4a4035;
+  border-color: #c4a574;
+}
+
+.inventory-slot__default {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  transition: opacity 0.2s ease;
+}
+
+.inventory-slot--filled:hover .inventory-slot__default {
+  opacity: 0;
+}
+
+.inventory-slot__hover-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  font-size: 0.7rem;
+  color: #e8e0d0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.inventory-slot--filled:hover .inventory-slot__hover-overlay {
+  opacity: 1;
+}
+
+.inventory-slot__symbol {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  word-break: break-all;
+}
+
+.inventory-slot__meta {
+  font-size: 0.7rem;
+  color: #b5a890;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.inventory-slot__change {
+  font-size: 0.7rem;
+  line-height: 1.15;
+  text-align: center;
+  color: #b5a890;
+}
+
+.inventory-slot__change--up {
+  color: #22c55e;
+}
+
+.inventory-slot__change--down {
+  color: #ef4444;
+}
+
+.inventory-slot__star {
+  width: 14px;
+  height: 14px;
+  background: radial-gradient(circle at 30% 30%, #e8e0ff, #8b7cb8);
+  clip-path: polygon(
+    50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%
+  );
+  box-shadow: 0 0 6px rgba(139, 124, 184, 0.6);
+}
+
+/* Popup */
+.inventory-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+}
+
+.inventory-popup {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #3d3528 0%, #2a2520 8px, #1e1b18 100%);
+  border: 4px solid #8b7355;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  padding: 1.25rem 1.5rem;
+  padding-top: 2rem;
+}
+
+.inventory-popup__close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #e8e0d0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.inventory-popup__close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.inventory-popup__title {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e8e0d0;
+  line-height: 1.3;
+}
+
+.inventory-popup__symbol {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: #c4a574;
+}
+
+.inventory-popup__graph {
+  min-height: 140px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 2px solid #5c4a32;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inventory-popup__graph-placeholder {
+  font-size: 0.8125rem;
+  color: #71717a;
+}
+
+.inventory-popup__details {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inventory-popup__detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.inventory-popup__detail-row dt {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #a1a1aa;
+  font-weight: 500;
+}
+
+.inventory-popup__detail-row dd {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #e8e0d0;
+  font-weight: 600;
+}
+
+.inventory-popup__detail-row dd.positive {
+  color: #22c55e;
+}
+
+.inventory-popup__detail-row dd.negative {
+  color: #ef4444;
+}

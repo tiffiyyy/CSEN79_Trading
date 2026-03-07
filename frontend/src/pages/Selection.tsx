@@ -1,127 +1,215 @@
-import {useState} from "react"
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { StockTable, type StockRow } from "../components/StockTable";
+import { InventorySlot, type Holding } from "../components/InventorySlot";
 import "./Selection.css";
-import type { numberNode } from "@google/model-viewer/lib/styles/parsers";
+
+const SAMPLE_ETFS: StockRow[] = [
+  { symbol: "SPY", company: "SPDR S&P 500 ETF Trust", price: 450.25, change: 2.15, changePercent: 0.48 },
+  { symbol: "QQQ", company: "Invesco QQQ Trust", price: 385.5, change: -1.2, changePercent: -0.31 },
+  { symbol: "IWM", company: "iShares Russell 2000 ETF", price: 195.8, change: 0.85, changePercent: 0.44 },
+  { symbol: "VTI", company: "Vanguard Total Stock Market ETF", price: 235.0, change: 1.5, changePercent: 0.64 },
+  { symbol: "VOO", company: "Vanguard S&P 500 ETF", price: 412.0, change: 1.8, changePercent: 0.44 },
+  { symbol: "EFA", company: "iShares MSCI EAFE ETF", price: 68.5, change: -0.3, changePercent: -0.44 },
+  { symbol: "EEM", company: "iShares MSCI Emerging Markets ETF", price: 39.2, change: 0.5, changePercent: 1.29 },
+  { symbol: "GLD", company: "SPDR Gold Shares", price: 185.4, change: 2.1, changePercent: 1.15 },
+  { symbol: "BND", company: "Vanguard Total Bond Market ETF", price: 72.8, change: 0.1, changePercent: 0.14 },
+  { symbol: "ARKK", company: "ARK Innovation ETF", price: 42.6, change: -0.8, changePercent: -1.84 },
+  { symbol: "XLF", company: "Financial Select Sector SPDR", price: 41.2, change: 0.35, changePercent: 0.86 },
+];
+
+const DEMO_HOLDINGS: Holding[] = [
+  { id: "1", symbol: "SPY", company: "SPDR S&P 500 ETF Trust", shares: 10, totalValue: 4502.5, pricePerShare: 450.25, change: 2.15, changePercent: 0.48 },
+  { id: "2", symbol: "QQQ", company: "Invesco QQQ Trust", shares: 5, totalValue: 1927.5, pricePerShare: 385.5, change: -1.2, changePercent: -0.31 },
+  { id: "3", symbol: "VTI", company: "Vanguard Total Stock Market ETF", shares: 20, totalValue: 4700, pricePerShare: 235.0, change: 1.5, changePercent: 0.64 },
+];
 
 export function Selection() {
-    const trade = ['-', 'x', 'y', 'z']; 
-    const account = ['-', 1, 2, 3]; 
-    const action = ['-', "Buy", "Sell", "Cancel"]; 
-    const shares = ['-']; 
-    const order = ['-', "Limit Order", "Market Order", "Cancel Order"]; 
-    const [selectedTrade, setSelectedTrade] = useState('-'); 
-    const [selectedAccount, setSelectedAccount] = useState('-'); 
-    const [selectedAction, setSelectedAction] = useState('-'); 
-    const [selectedShares, setSelectedShares] = useState('-'); 
-    const [selectedOrder, setSelectedOrder] = useState('-'); 
-    const [numShares, setNumShares] = useState('-'); 
-    const [etf, setETF] = useState('-'); 
+  const navigate = useNavigate();
+  const trade = ["-", "x", "y", "z"];
+  const account = ["-", 1, 2, 3];
+  const action = ["-", "Buy", "Sell", "Cancel"];
+  const shares = ["-"];
+  const order = ["-", "Limit Order", "Market Order", "Cancel Order"];
 
-    return (
-        <>
-        <div className="page">
-            {/* Note: is this going to be a react component that will accessed 
-                through each stock page? or will they be able to select a stock and buy here */}
+  const [selectedTrade, setSelectedTrade] = useState("-");
+  const [selectedAccount, setSelectedAccount] = useState("-");
+  const [selectedAction, setSelectedAction] = useState("-");
+  const [selectedShares, setSelectedShares] = useState("-");
+  const [selectedOrder, setSelectedOrder] = useState("-");
+  const [numShares, setNumShares] = useState("");
+  const [etf, setETF] = useState("");
+  const [selectedRow, setSelectedRow] = useState<StockRow | null>(null);
+  const [symbolSearch, setSymbolSearch] = useState("");
+  const [holdings, setHoldings] = useState<Holding[]>(DEMO_HOLDINGS);
 
-            {/* Create an [id].tsx that will return all information about selected stock. 
-                This page will be for orders to be purchased. Button will activate transaction. */}
-            
-            {/* Button will activate transaction. Calculation will be based on value from [id].tsx */}
-            <h2>Buy Stocks</h2>
-            <div className="account-box">
-                <div className="selections">
-                    <p>TRADE</p>
-                    <select value={selectedTrade} onChange={(e) => setSelectedTrade(e.target.value)}>
-                        {trade.map((trade) => (
-                            <option key={trade} value={trade}>
-                                {trade}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+  const filteredEtfs = symbolSearch.trim()
+    ? SAMPLE_ETFS.filter((row) =>
+        row.symbol.toLowerCase().includes(symbolSearch.trim().toLowerCase())
+      )
+    : SAMPLE_ETFS;
 
-                <div className="selections">
-                    <p>ACCOUNT</p>
-                    <select value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)}>
-                        {account.map((account) => (
-                            <option key={account} value={account}>
-                                {account}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+  const numSharesVal = Number(numShares) || 0;
+  const pricePerShare = selectedRow?.price ?? 0;
+  const orderValue = numSharesVal * pricePerShare;
 
-                <div className="selections">
-                    <div className="search">
-                        <p>SEARCH ETF</p>
-                        <input
-                            type="string" placeholder="-" value={etf} min="1"
-                            onChange={(e) => setETF(e.target.value)}
-                            className="search-box"
-                        />
-                    </div>
-                </div>
-            </div>
+  const inventoryRows = Math.max(4, Math.ceil(Math.max(holdings.length, 36) / 9));
+  const totalSlots = inventoryRows * 9;
 
-            <div className="selections-box">
-                <div className="selections">
-                    <p>ACTION</p>
-                    <select value={selectedAction} onChange={(e) => setSelectedAction(e.target.value)}>
-                        {action.map((act) => (
-                            <option key={act} value={act}>
-                                {act}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+  const handleBuyClick = () => {
+    if (selectedAction !== "Buy" || !selectedRow || numSharesVal <= 0) return;
+    const newHolding: Holding = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      symbol: selectedRow.symbol,
+      company: selectedRow.company,
+      shares: numSharesVal,
+      totalValue: orderValue,
+      pricePerShare: selectedRow.price,
+      change: selectedRow.change,
+      changePercent: selectedRow.changePercent,
+    };
+    setHoldings((prev) => [...prev, newHolding]);
+    navigate("/transaction");
+  };
 
-                <div className="selections">
-                    <p>NUM SHARES</p>
-                    <input
-                        type="number" placeholder="0" value={numShares} min="1"
-                        onChange={(e) => setNumShares(e.target.value)}
-                        className="numShares"
-                    />
-                </div>
+  return (
+    <div className="page">
+      <h2 className="page__title">Buy Stocks</h2>
 
-                <div className="selections">
-                    <p>SHARES</p>
-                    <select value={selectedShares} onChange={(e) => setSelectedShares(e.target.value)}>
-                        {shares.map((shares) => (
-                            <option key={shares} value={shares}>
-                                {shares}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                
-                <div className="selections">
-                    <p>ORDER TYPE</p>
-                    <select value={selectedOrder} onChange={(e) => setSelectedOrder(e.target.value)}>
-                        {order.map((order) => (
-                            <option key={order} value={order}>
-                                {order}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-            </div>
-
-            <div className="est-value">
-                <h2>Estimated Order Value</h2>
-                <p>Value Here</p>
-                {/* Add a calculation option to display the amounto of stocks being bought */}
-                {/* The calculation should auto-update as someone inputs a number; est order val. */}
-
-                {/* Revise to be just the action selected above. */}
-                <Link to="/transaction">
-                    <button disabled={selectedAction === '-'}>
-                        {selectedAction === '-' ? "Select an Action" : selectedAction}
-                    </button>
-                </Link>
-            </div>
+      <div className="selection-row selection-row--bazaar">
+        <div className="selection-bazaar-panel">
+          <div className="selection-bazaar-panel__title">Bazaar → Trading</div>
+          <div className="selection-bazaar-panel__search">
+            <input
+              type="text"
+              placeholder="Search by symbol..."
+              value={symbolSearch}
+              onChange={(e) => setSymbolSearch(e.target.value)}
+              className="selection-bazaar-panel__search-input"
+              aria-label="Search by symbol"
+            />
+          </div>
+          <div className="selection-bazaar-panel__content">
+            <StockTable
+              rows={filteredEtfs}
+              selectedSymbol={selectedRow?.symbol ?? null}
+              onSelectRow={(row) =>
+                setSelectedRow((prev) => (prev?.symbol === row.symbol ? null : row))
+              }
+            />
+          </div>
         </div>
-        </>
-    )
+      </div>
+
+      <div className="selection-row selection-row--form">
+        <div className="account-box">
+            <div className="selections">
+              <p>TRADE</p>
+              <select value={selectedTrade} onChange={(e) => setSelectedTrade(e.target.value)}>
+                {trade.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+            <div className="selections">
+              <p>ACCOUNT</p>
+              <select value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)}>
+                {account.map((a) => (
+                  <option key={a} value={String(a)}>{a}</option>
+                ))}
+              </select>
+            </div>
+            <div className="selections">
+              <div className="search">
+                <p>SEARCH ETF</p>
+                <input
+                  type="text"
+                  placeholder="-"
+                  value={etf}
+                  onChange={(e) => setETF(e.target.value)}
+                  className="search-box"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="selections-box">
+            <div className="selections">
+              <p>ACTION</p>
+              <select value={selectedAction} onChange={(e) => setSelectedAction(e.target.value)}>
+                {action.map((act) => (
+                  <option key={act} value={act}>{act}</option>
+                ))}
+              </select>
+            </div>
+            <div className="selections">
+              <p>NUM SHARES</p>
+              <input
+                type="number"
+                placeholder="0"
+                value={numShares}
+                min={1}
+                onChange={(e) => setNumShares(e.target.value)}
+                className="numShares"
+              />
+            </div>
+            <div className="selections">
+              <p>SHARES</p>
+              <select value={selectedShares} onChange={(e) => setSelectedShares(e.target.value)}>
+                {shares.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div className="selections">
+              <p>ORDER TYPE</p>
+              <select value={selectedOrder} onChange={(e) => setSelectedOrder(e.target.value)}>
+                {order.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="est-value">
+            <h2>Estimated Order Value</h2>
+            <p className="est-value__display">
+              {selectedRow && numSharesVal > 0
+                ? `$${orderValue.toFixed(2)}`
+                : "Value Here"}
+            </p>
+            <p className="est-value__hint">
+              {selectedRow ? `${numSharesVal} × $${pricePerShare.toFixed(2)}` : "Select an ETF and enter num shares"}
+            </p>
+            {selectedAction === "Buy" && selectedRow && numSharesVal > 0 ? (
+              <button onClick={handleBuyClick}>Buy</button>
+            ) : (
+              <Link to="/transaction">
+                <button disabled={selectedAction === "-"}>
+                  {selectedAction === "-" ? "Select an Action" : selectedAction}
+                </button>
+              </Link>
+            )}
+          </div>
+      </div>
+
+      <div className="selection-inventory-wrap">
+        <div className="selection-inventory-panel">
+          <div className="selection-inventory-panel__title">Inventory</div>
+          <div
+            className="selection-inventory-panel__grid"
+            style={{ gridTemplateRows: `repeat(${inventoryRows}, 1fr)` }}
+          >
+            {Array.from({ length: totalSlots }, (_, i) => (
+              <InventorySlot
+                key={holdings[i]?.id ?? `empty-${i}`}
+                holding={holdings[i] ?? null}
+                isSpecialSlot={i === totalSlots - 1}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

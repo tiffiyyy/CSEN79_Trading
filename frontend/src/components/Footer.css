@@ -37,12 +37,12 @@
   gap: 0.5rem;
 }
 
-.footer__links a {
-  color: #a1a1aa;
+.footer .links a {
+  color: #c4a574;
   text-decoration: none;
   font-size: 0.9375rem;
 }
 
-.footer__links a:hover {
-  color: #e4e4e7;
+.footer .links a:hover {
+  color: #e8e0d0;
 }

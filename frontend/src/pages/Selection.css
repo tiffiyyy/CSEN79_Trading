@@ -1,61 +1,194 @@
 .page {
     display: flex;
-    text-align: center;
     flex-direction: column;
     min-height: 100vh;
-    padding-left: 2rem;
-    padding-top: 4rem;
+    padding: 4rem 1.5rem 0;
     background-color: #0a0a0b;
+    color: #e4e4e7;
+    text-align: left;
+}
+
+.page__title {
+    text-align: center;
+    margin: 0 0 1.5rem;
+    font-size: 1.75rem;
+    font-weight: 700;
     color: #e4e4e7;
 }
 
-.account-box {
-    display: flex; 
-    flex-direction: row;
-    gap: 2rem; 
-    justify-content: center;
+.selection-row {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
 }
 
+.selection-row--bazaar {
+    margin-bottom: 2rem;
+}
+
+.selection-row--bazaar .selection-bazaar-panel {
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.selection-row--form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.selection-bazaar-panel {
+    width: 100%;
+    box-sizing: border-box;
+    border: 4px solid #8b7355;
+    background: linear-gradient(180deg, #3d3528 0%, #2a2520 8px, #1e1b18 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(139, 115, 85, 0.4),
+        0 4px 0 #5c4a32,
+        0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.selection-bazaar-panel__title {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #e8e0d0;
+    background: rgba(0, 0, 0, 0.25);
+    border-bottom: 2px solid #5c4a32;
+}
+
+.selection-bazaar-panel__search {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 2px solid #5c4a32;
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.selection-bazaar-panel__search-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9375rem;
+}
+
+.selection-bazaar-panel__content {
+    padding: 0.75rem;
+}
+
+.account-box,
 .selections-box {
-    display: flex; 
+    display: flex;
     flex-direction: row;
-    gap: 2rem; 
-    padding-top: 1rem; 
-    padding-bottom: 1rem; 
+    flex-wrap: wrap;
     justify-content: center;
+    gap: 1.5rem;
 }
 
 .selections {
-    display: flex; 
+    display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: 0.25rem;
+    min-width: 10rem;
+    width: 10rem;
 }
 
+.selections p {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #a1a1aa;
+    text-transform: uppercase;
+}
+
+.selections input,
 .selections select {
-    margin-top: 0rem; 
-}
-
-.est-value {
-    margin-top: 4rem; 
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 2.25rem;
 }
 
 .search {
-    display: flex; 
+    display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: 0.25rem;
+    min-width: 10rem;
+    width: 10rem;
 }
 
-.search-box {
-    width: 6rem; 
-    height: 2rem; 
+.search input {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 2.25rem;
 }
 
+.search-box,
 .numShares {
-    width: 6rem; 
-    height: 2rem; 
+    width: 100%;
+    min-height: 2.25rem;
+}
+
+.est-value {
+    margin-top: 0.25rem;
+    text-align: center;
+}
+
+.est-value h2 {
+    text-align: center;
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+}
+
+.est-value__display {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #e8e0d0;
+    margin: 0 0 0.25rem;
+}
+
+.est-value__hint {
+    font-size: 0.8125rem;
+    color: #71717a;
+    margin: 0 0 0.75rem;
 }
 
 .numShares::-webkit-outer-spin-button,
 .numShares::-webkit-inner-spin-button {
     margin: 0;
+}
+
+/* Inventory panel – below columns */
+.selection-inventory-wrap {
+    max-width: 900px;
+    margin: 2rem auto 0;
+    margin-bottom: 4rem;
+    padding-bottom: 2rem;
+    width: 100%;
+}
+
+.selection-inventory-panel {
+    border: 4px solid #6b5b45;
+    background: linear-gradient(180deg, #2a2825 0%, #1c1a18 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(139, 115, 85, 0.4),
+        0 4px 0 #5c4a32,
+        0 6px 12px rgba(0, 0, 0, 0.4);
+    margin-bottom: 0.5rem;
+}
+
+.selection-inventory-panel__title {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #e8e0d0;
+    background: rgba(0, 0, 0, 0.25);
+    border-bottom: 2px solid #5c4a32;
+}
+
+.selection-inventory-panel__grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(4, 1fr); /* overridden by inline style when inventory expands */
+    gap: 2px;
+    padding: 0.5rem;
 }

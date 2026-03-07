@@ -1,10 +1,13 @@
-import { BrowserRouter, Routes, Route} from 'react-router-dom'; 
-import {Home} from "./pages/Home"; 
-import {Selection} from "./pages/Selection"; 
-import {Transaction} from "./pages/Transaction"; 
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import "./App.css"; 
+import { Home } from "./pages/Home";
+import { Login } from "./pages/Login";
+import { Profile } from "./pages/Profile";
+import { Selection } from "./pages/Selection";
+import { Transaction } from "./pages/Transaction";
+import "./App.css";
 
 function App() {
   return (
@@ -13,7 +16,9 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/selection" element={<Selection />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/selection" element={<ProtectedRoute><Selection /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/transaction" element={<Transaction />} />
         </Routes>
         <Footer />

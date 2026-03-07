@@ -6,7 +6,9 @@ export default function Header() {
         <>
             <nav className="header">
                 <Link to="/">Home</Link>
+                <Link to="/login">Log in</Link>
                 <Link to="/selection">Selection</Link>
+                <Link to="/profile">Profile</Link>
             </nav>
         </>
     )

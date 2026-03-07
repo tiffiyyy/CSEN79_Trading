@@ -27,7 +27,9 @@ class Stock {
         Stock(string ticker);
         string getTicker();
         double getLastTradedPrice();
-        void placeBuyOrder(Order* order);
-        void placeSellOrder(Order* order);
+        void setLastTradedPrice(double newLastTradedPrice);
+        void placeBuyOrder(const Order* const order);
+        void placeSellOrder(const Order* const order);
         void executeOrder(Order* order);
+        void matchOrders();
 };

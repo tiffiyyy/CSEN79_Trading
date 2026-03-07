@@ -16,6 +16,13 @@ export function getCurrentUsername(): string | null {
   return typeof window !== "undefined" ? sessionStorage.getItem(USERNAME_KEY) : null;
 }
 
+export function clearAuthenticated(): void {
+  if (typeof window !== "undefined") {
+    sessionStorage.removeItem(AUTH_KEY);
+    sessionStorage.removeItem(USERNAME_KEY);
+  }
+}
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }

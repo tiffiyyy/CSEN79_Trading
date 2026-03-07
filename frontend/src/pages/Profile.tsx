@@ -1,8 +1,15 @@
-import { getCurrentUsername } from "../components/ProtectedRoute";
+import { useNavigate } from "react-router-dom";
+import { getCurrentUsername, clearAuthenticated } from "../components/ProtectedRoute";
 import "./Profile.css";
 
 export function Profile() {
+  const navigate = useNavigate();
   const username = getCurrentUsername();
+
+  const handleLogOut = () => {
+    clearAuthenticated();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <main className="profile-page">
@@ -30,6 +37,10 @@ export function Profile() {
           <span className="profile-stat-card__value">—</span>
         </div>
       </section>
+
+      <button type="button" className="profile-page__logout btn btn--primary" onClick={handleLogOut}>
+        Log out
+      </button>
     </main>
   );
 }

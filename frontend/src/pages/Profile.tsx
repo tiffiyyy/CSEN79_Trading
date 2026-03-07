@@ -1,9 +1,15 @@
+import { getCurrentUsername } from "../components/ProtectedRoute";
 import "./Profile.css";
 
 export function Profile() {
+  const username = getCurrentUsername();
+
   return (
     <main className="profile-page">
       <h1 className="profile-page__title">Profile</h1>
+      {username && (
+        <p className="profile-page__username">{username}</p>
+      )}
       <p className="profile-page__subtitle">Your trading statistics</p>
 
       <section className="profile-stats">

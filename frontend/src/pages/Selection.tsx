@@ -26,22 +26,18 @@ const DEMO_HOLDINGS: Holding[] = [
 
 export function Selection() {
   const navigate = useNavigate();
-  const trade = ["-", "x", "y", "z"];
   const account = ["-", 1, 2, 3];
   const action = ["-", "Buy", "Sell", "Cancel"];
-  const shares = ["-"];
   const order = ["-", "Limit Order", "Market Order", "Cancel Order"];
 
-  const [selectedTrade, setSelectedTrade] = useState("-");
   const [selectedAccount, setSelectedAccount] = useState("-");
   const [selectedAction, setSelectedAction] = useState("-");
-  const [selectedShares, setSelectedShares] = useState("-");
   const [selectedOrder, setSelectedOrder] = useState("-");
   const [numShares, setNumShares] = useState("");
-  const [etf, setETF] = useState("");
   const [selectedRow, setSelectedRow] = useState<StockRow | null>(null);
   const [symbolSearch, setSymbolSearch] = useState("");
   const [holdings, setHoldings] = useState<Holding[]>(DEMO_HOLDINGS);
+  const [accountBalance, setAccountBalance] = useState(0);
 
   const filteredEtfs = symbolSearch.trim()
     ? SAMPLE_ETFS.filter((row) =>
@@ -73,8 +69,9 @@ export function Selection() {
   };
 
   return (
-    <div className="page">
+    <div className="page selection-page">
       <h2 className="page__title">Buy Stocks</h2>
+      <p className="selection-balance">Balance: ${accountBalance}</p>
 
       <div className="selection-row selection-row--bazaar">
         <div className="selection-bazaar-panel">
@@ -104,32 +101,12 @@ export function Selection() {
       <div className="selection-row selection-row--form">
         <div className="account-box">
             <div className="selections">
-              <p>TRADE</p>
-              <select value={selectedTrade} onChange={(e) => setSelectedTrade(e.target.value)}>
-                {trade.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-            <div className="selections">
               <p>ACCOUNT</p>
               <select value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)}>
                 {account.map((a) => (
                   <option key={a} value={String(a)}>{a}</option>
                 ))}
               </select>
-            </div>
-            <div className="selections">
-              <div className="search">
-                <p>SEARCH ETF</p>
-                <input
-                  type="text"
-                  placeholder="-"
-                  value={etf}
-                  onChange={(e) => setETF(e.target.value)}
-                  className="search-box"
-                />
-              </div>
             </div>
           </div>
 
@@ -152,14 +129,6 @@ export function Selection() {
                 onChange={(e) => setNumShares(e.target.value)}
                 className="numShares"
               />
-            </div>
-            <div className="selections">
-              <p>SHARES</p>
-              <select value={selectedShares} onChange={(e) => setSelectedShares(e.target.value)}>
-                {shares.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
             </div>
             <div className="selections">
               <p>ORDER TYPE</p>
@@ -205,6 +174,7 @@ export function Selection() {
                 key={holdings[i]?.id ?? `empty-${i}`}
                 holding={holdings[i] ?? null}
                 isSpecialSlot={i === totalSlots - 1}
+                onStarClick={i === totalSlots - 1 ? () => setAccountBalance((b) => b + 1) : undefined}
               />
             ))}
           </div>

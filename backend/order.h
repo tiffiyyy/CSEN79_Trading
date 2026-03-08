@@ -1,4 +1,7 @@
+#ifndef ORDER_H
+#define ORDER_H
 #include <string>
+class User;
 using namespace std;
 enum OrderType {
     BUY,
@@ -10,7 +13,7 @@ enum OrderStatus {
     CANCELLED
 };
 struct Order {
-    int userId; //using userId over user* to avoid errors when deleting users
+    User* user;
     string ticker;
     OrderType buyOrSell;
     OrderStatus status;
@@ -18,3 +21,4 @@ struct Order {
     int quantity;
     long long timestamp;
 };
+#endif

@@ -1,3 +1,5 @@
+#ifndef MARKET_H
+#define MARKET_H
 #include <string>
 #include <unordered_map>
 
@@ -23,8 +25,9 @@ class Market {
     bool addUser(const User& user);
     User* getUser(const string& username);
     
-    bool placeOrder(const Order* order);
+    bool placeOrder(Order* order);
     void matchTicker(const string& ticker);
 };
 
 
+#endif

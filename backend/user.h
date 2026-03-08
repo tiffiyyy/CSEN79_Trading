@@ -1,19 +1,22 @@
+#ifndef USER_H
+#define USER_H
 #include <string>
 #include <vector>
 #include "order.h"
-#include "stock.h"
-using namespace std;    
+#include "portfolio.h"
+using namespace std;
+
 class User {
     private:
-        int id;
         string username;
-        string password;
         vector<Order*> orders;
-        vector<Stock*> stocks;
+        Portfolio portfolio;
     public:
-        User(int id, string username, string password);
-        int getId();
-        string getUsername();
-        vector<Order*> getOrders();
-        vector<Stock*> getStocks();
+        User(string username);
+        string getUsername() const;
+        const vector<Order*>& getOrders() const;
+        void addOrder(Order* order);
+        Portfolio& getPortfolio();
+        const Portfolio& getPortfolio() const;
 };
+#endif

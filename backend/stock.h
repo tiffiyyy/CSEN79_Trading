@@ -1,6 +1,8 @@
-#include <iostream>
-#include <string>
+#ifndef STOCK_H
+#define STOCK_H
 #include <queue>
+#include <string>
+#include <utility>
 #include "order.h"
 using namespace std;
 
@@ -28,8 +30,9 @@ class Stock {
         string getTicker();
         double getLastTradedPrice();
         void setLastTradedPrice(double newLastTradedPrice);
-        void placeBuyOrder(const Order* const order);
-        void placeSellOrder(const Order* const order);
+        void placeBuyOrder(Order* order);
+        void placeSellOrder(Order* order);
         void executeOrder(Order* order);
-        void matchOrders();
+        pair<Order*, Order*> matchOrders();
 };
+#endif

@@ -38,11 +38,11 @@
 }
 
 .footer .links a {
-  color: #c4a574;
+  color: #e5e5e5;
   text-decoration: none;
   font-size: 0.9375rem;
 }
 
 .footer .links a:hover {
-  color: #e8e0d0;
+  color: #fff;
 }

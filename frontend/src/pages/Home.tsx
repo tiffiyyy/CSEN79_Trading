@@ -70,6 +70,17 @@ export function Home() {
         }}
         onClick={handleHeroClick}
       >
+        <div className="hero-video-wrap" aria-hidden>
+          <video
+            className="hero-video"
+            src="/stocks.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+          <div className="hero-video-dim" />
+        </div>
         {cracksVisible && (
           <div className="hero-crack-overlay" aria-hidden>
             <svg className="hero-crack-svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice">
@@ -105,23 +116,25 @@ export function Home() {
           </div>
         )}
         <div className="glow" aria-hidden />
-        <h1 className="hero-title">
-          <span className="title-accent">Trade</span> with precision
-        </h1>
-        <p className="subtitle">for our CSEN 79 course</p>
-        <div className="actions">
-          <Link to="/login" className="btn btn--primary">
-            Start trading
-          </Link>
-          <Link to="/transaction" className="btn btn--outline">
-            View transactions
-          </Link>
+        <div className="hero-content">
+          <h1 className="hero-title">
+            <span className="title-accent">Trade</span> with precision
+          </h1>
+          <p className="subtitle">with our CSEN 79 project</p>
+          <div className="actions">
+            <Link to="/login" className="btn btn--primary">
+              Start trading
+            </Link>
+            <Link to="/transaction" className="btn btn--outline">
+              View transactions
+            </Link>
+          </div>
         </div>
       </section>
 
       <section className="bazaar">
         <div className="bazaar__bg-text" aria-hidden>
-          Bazaar
+          The Bazaar
         </div>
         <div className="bazaar__inner">
           {!loadingDone && (

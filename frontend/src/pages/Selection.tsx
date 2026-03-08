@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { getCurrentUsername } from "../components/ProtectedRoute";
 import { StockTable, type StockRow } from "../components/StockTable";
 import { InventorySlot, type Holding } from "../components/InventorySlot";
 import "./Selection.css";
@@ -26,11 +27,9 @@ const DEMO_HOLDINGS: Holding[] = [
 
 export function Selection() {
   const navigate = useNavigate();
-  const account = ["-", 1, 2, 3];
+  const currentUsername = getCurrentUsername() ?? "-";
   const action = ["-", "Buy", "Sell", "Cancel"];
   const order = ["-", "Limit Order", "Market Order", "Cancel Order"];
-
-  const [selectedAccount, setSelectedAccount] = useState("-");
   const [selectedAction, setSelectedAction] = useState("-");
   const [selectedOrder, setSelectedOrder] = useState("-");
   const [numShares, setNumShares] = useState("");
@@ -102,10 +101,8 @@ export function Selection() {
         <div className="account-box">
             <div className="selections">
               <p>ACCOUNT</p>
-              <select value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)}>
-                {account.map((a) => (
-                  <option key={a} value={String(a)}>{a}</option>
-                ))}
+              <select value={currentUsername} onChange={() => {}} aria-label="Current account">
+                <option value={currentUsername}>{currentUsername}</option>
               </select>
             </div>
           </div>

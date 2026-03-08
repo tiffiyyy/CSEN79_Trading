@@ -1,4 +1,39 @@
 #include "mongoose_dependencies/mongoose.h"
+using namespace std;
+#include "stock.h"
+#include "user.h"
+#include "order.h"
+
+struct OrderRequest {
+    char symbol[16];
+    char order_type[16];
+    double shares;
+    double user_id;
+};
+
+bool parse_order_request(struct mg_http_message *hm, struct OrderRequest *req) {
+    // Zero out the memory so we don't end up with garbage data
+    memset(req, 0, sizeof(struct OrderRequest));
+
+    char *symbol_ptr = mg_json_get_str(hm->body, "$.symbol");
+    char *type_ptr = mg_json_get_str(hm->body, "$.orderType");
+
+    if (symbol_ptr) {
+        snprintf(req->symbol, sizeof(req->symbol), "%s", symbol_ptr);
+    }
+    if (type_ptr) {
+        snprintf(req->order_type, sizeof(req->order_type), "%s", type_ptr);
+    }
+    mg_json_get_num(hm->body, "$.shares", &req->shares);
+    mg_json_get_num(hm->body, "$.userId", &req->user_id);
+
+    // Basic safety check: ensure the required fields actually exist
+    if (req->shares <= 0 || req->user_id == 0 || req->symbol[0] == '\0') {
+        return false;
+    }
+
+    return true;
+}
 
 // Connection event handler function
 static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
@@ -8,46 +43,92 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
            ((struct mg_http_message *) ev_data)->uri.buf);
     struct mg_http_message *hm = (struct mg_http_message *) ev_data;  
     
-    // Check for REST API calls first
+    // Check for REST API calls
+
+    //status endpoint
     if (mg_match(hm->uri, mg_str("/api/hello"), NULL)) {              
       mg_http_reply(c, 200, "", "{%m:%d}\n", MG_ESC("status"), 1);    
       return; 
     }
+
     if (mg_match(hm->uri, mg_str("/api/buy"), NULL)) {
-      
-      // Ensure they are actually sending data (POST request)
       if (!mg_match(hm->method, mg_str("POST"), NULL)) {
-        mg_http_reply(c, 405, "", "{\"error\": \"Method not allowed, use POST\"}\n");
+        mg_http_reply(c, 405, "", "{\"error\": \"Method not allowed\"}\n");
         return; 
       }
 
-      // Set up variables to hold parsed data
-      char symbol[16] = {0};       // AAPL, TSLA, etc.
-      char order_type[16] = {0};   // limit, market, etc.
-      double shares = 0;           // num of shares
-      double user_id = 0;          // user id of user placing order
-
-      // Extract the data from the request body (hm->body)
-      char *symbol_ptr = mg_json_get_str(hm->body, "$.symbol");
-      char *type_ptr = mg_json_get_str(hm->body, "$.orderType");
-
-      if (symbol_ptr) {
-          snprintf(symbol, sizeof(symbol), "%s", symbol_ptr);
+      struct OrderRequest req;
+      if (!parse_order_request(hm, &req)) {
+          mg_http_reply(c, 400, "", "{\"error\": \"Invalid JSON payload\"}\n");
+          return;
       }
-      if (type_ptr) {
-          snprintf(order_type, sizeof(order_type), "%s", type_ptr);
-      }
-      mg_json_get_num(hm->body, "$.shares", &shares);
-      mg_json_get_num(hm->body, "$.userId", &user_id);
 
-      printf("Order received: User %d wants to buy %f shares of %s (%s)\n", 
-             (int)user_id, shares, symbol, order_type);
+      printf("Buy order received: User %d wants to buy %f shares of %s (%s)\n", 
+             (int)req.user_id, req.shares, req.symbol, req.order_type);
 
-      // send a success response back to React
       mg_http_reply(c, 200, "Content-Type: application/json\r\n", 
-                    "{\"status\": \"success\", \"message\": \"Order received\"}\n");
+                    "{\"status\": \"success\", \"message\": \"Buy order received\"}\n");
+      return; 
+
+      Order newOrder;
+      newOrder.userId = (int)req.user_id;
+      newOrder.ticker = string(req.symbol);
+      if (strcmp(req.order_type, "market") == 0) {
+          newOrder.buyOrSell = BUY;
+      } else if (strcmp(req.order_type, "limit") == 0) {
+          newOrder.buyOrSell = BUY; // For simplicity, treating limit orders as buy orders
+      } else {
+          mg_http_reply(c, 400, "", "{\"error\": \"Invalid order type\"}\n");
+          return;
+      }
+      newOrder.status = PENDING;
+      newOrder.price = 0; // Price would be determined during order execution
+      newOrder.quantity = (int)req.shares;
+      newOrder.timestamp = time(NULL);
+
+      // FIND THE STOCK AND DO .EXECUTEORDER
+    }
+
+    if (mg_match(hm->uri, mg_str("/api/sell"), NULL)) {
+      if (!mg_match(hm->method, mg_str("POST"), NULL)) {
+        mg_http_reply(c, 405, "", "{\"error\": \"Method not allowed\"}\n");
+        return; 
+      }
+
+      struct OrderRequest req;
+      if (!parse_order_request(hm, &req)) {
+          mg_http_reply(c, 400, "", "{\"error\": \"Invalid JSON payload\"}\n");
+          return;
+      }
+
+      printf("Sell order received: User %d wants to sell %f shares of %s (%s)\n", 
+             (int)req.user_id, req.shares, req.symbol, req.order_type);
+
+      mg_http_reply(c, 200, "Content-Type: application/json\r\n", 
+                    "{\"status\": \"success\", \"message\": \"Sell order received\"}\n");
       return; 
     }
+
+    if (mg_match(hm->uri, mg_str("/api/cancel"), NULL)) {
+      if (!mg_match(hm->method, mg_str("POST"), NULL)) {
+        mg_http_reply(c, 405, "", "{\"error\": \"Method not allowed\"}\n");
+        return; 
+      }
+
+      struct OrderRequest req;
+      if (!parse_order_request(hm, &req)) {
+          mg_http_reply(c, 400, "", "{\"error\": \"Invalid JSON payload\"}\n");
+          return;
+      }
+
+      printf("Cancel order received: User %d wants to cancel %f shares of %s (%s)\n", 
+             (int)req.user_id, req.shares, req.symbol, req.order_type);
+
+      mg_http_reply(c, 200, "Content-Type: application/json\r\n", 
+                    "{\"status\": \"success\", \"message\": \"Cancel order received\"}\n");
+      return; 
+    }
+
     // If they just go to domain then serve the app
     struct mg_http_serve_opts opts = {0};
     

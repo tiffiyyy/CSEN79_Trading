@@ -1,4 +1,5 @@
 #include <string>
+#pragma once
 using namespace std;
 enum OrderType {
     BUY,

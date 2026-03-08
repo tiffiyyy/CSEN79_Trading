@@ -14,6 +14,91 @@
   padding: 4rem 1.5rem;
   overflow: hidden;
   will-change: opacity, transform;
+  cursor: pointer;
+}
+
+/* Background video: stocks.mp4 in public folder */
+.hero-video-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-video-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+}
+
+/* Shattered-glass crack overlay: forms on first click (hero background only) */
+.hero-crack-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  animation: crack-reveal 0.6s ease-out forwards;
+}
+
+.hero-crack-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-crack-impact {
+  animation: crack-impact 0.2s ease-out forwards;
+}
+
+.hero-crack-line {
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 1.2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: crack-draw 0.8s ease-out forwards;
+}
+
+.hero-crack-line--branch {
+  stroke: rgba(255, 255, 255, 0.5);
+  stroke-width: 0.9;
+}
+
+@keyframes crack-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes crack-impact {
+  from {
+    r: 0;
+    opacity: 0;
+  }
+  to {
+    r: 4;
+    opacity: 1;
+  }
+}
+
+@keyframes crack-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 .scroll-fade {
@@ -29,11 +114,28 @@
   height: 80vmin;
   background: radial-gradient(
     ellipse 60% 50% at 50% 50%,
-    rgba(196, 165, 116, 0.06) 0%,
-    rgba(139, 115, 85, 0.03) 40%,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
     transparent 70%
   );
   pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  animation: hero-content-fade-in 0.8s ease-out forwards;
+}
+
+@keyframes hero-content-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .hero-title {
@@ -44,11 +146,11 @@
   letter-spacing: -0.03em;
   line-height: 1.1;
   text-align: center;
-  color: #e8e0d0;
+  color: #f5f5f5;
 }
 
 .title-accent {
-  background: linear-gradient(135deg, #c4a574 0%, #8b7355 50%, #a68b5b 100%);
+  background: linear-gradient(135deg, #fff 0%, #ccc 50%, #e5e5e5 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -56,10 +158,10 @@
 
 .subtitle {
   position: relative;
-  margin: 1.25rem 0 2rem;
+  margin: 1.25rem auto 2rem;
   max-width: 28ch;
   font-size: 1.125rem;
-  color: #b5a890;
+  color: #a3a3a3;
   text-align: center;
   line-height: 1.6;
 }
@@ -83,17 +185,17 @@
   transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
   cursor: pointer;
   font-family: inherit;
-  border: 2px solid #5c4a32;
-  background: #2a2825;
-  color: #e8e0d0;
-  box-shadow: inset 0 0 0 1px rgba(139, 115, 85, 0.2);
+  border: 2px solid #404040;
+  background: #252525;
+  color: #f5f5f5;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .btn--primary:hover {
-  border-color: #8b7355;
-  background: #3d3528;
-  color: #d4b896;
-  box-shadow: inset 0 0 0 1px rgba(139, 115, 85, 0.3), 0 2px 0 #5c4a32;
+  border-color: #666;
+  background: #333;
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 2px 0 #404040;
 }
 
 .btn--outline {
@@ -101,15 +203,15 @@
 }
 
 .btn--outline:hover {
-  border-color: #8b7355;
+  border-color: #666;
   background: #2a2825;
-  color: #d4b896;
+  color: #fff;
 }
 
 /* --- Hypixel Skyblock Bazaar --- */
 .bazaar {
   position: relative;
-  background: linear-gradient(180deg, #2d2519 0%, #1a1510 50%, #0f0d0a 100%);
+  background: linear-gradient(180deg, #1a1a1a 0%, #141414 50%, #0a0a0b 100%);
   padding: 3rem 1.5rem 4rem;
   min-height: 80vh;
 }
@@ -121,7 +223,7 @@
   transform: translateX(-50%);
   font-size: clamp(2rem, 8vw, 4rem);
   font-weight: 700;
-  color: rgba(196, 165, 116, 0.25);
+  color: rgba(255, 255, 255, 0.15);
   letter-spacing: 0.2em;
   pointer-events: none;
 }
@@ -140,7 +242,7 @@
 .bazaar__loading-text {
   margin: 0 0 1rem;
   font-size: 0.9375rem;
-  color: #8b7355;
+  color: #999;
 }
 
 /* Mario-style loading strip */
@@ -199,11 +301,11 @@
 
 /* Hypixel-style panels: light brown border, dark inner */
 .bazaar-panel {
-  border: 4px solid #8b7355;
-  background: linear-gradient(180deg, #3d3528 0%, #2a2520 8px, #1e1b18 100%);
+  border: 4px solid #555;
+  background: linear-gradient(180deg, #2a2a2a 0%, #222 8px, #1a1a1a 100%);
   box-shadow:
-    inset 0 0 0 1px rgba(139, 115, 85, 0.4),
-    0 4px 0 #5c4a32,
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 4px 0 #404040,
     0 6px 12px rgba(0, 0, 0, 0.4);
   margin-bottom: 0.5rem;
 }
@@ -216,14 +318,14 @@
   padding: 0.4rem 0.75rem;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #e8e0d0;
+  color: #f5f5f5;
   background: rgba(0, 0, 0, 0.25);
-  border-bottom: 2px solid #5c4a32;
+  border-bottom: 2px solid #404040;
 }
 
 .bazaar-panel__search {
   padding: 0.5rem 0.75rem;
-  border-bottom: 2px solid #5c4a32;
+  border-bottom: 2px solid #404040;
   background: rgba(0, 0, 0, 0.15);
 }
 

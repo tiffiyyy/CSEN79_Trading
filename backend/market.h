@@ -1,3 +1,5 @@
+#ifndef MARKET_H
+#define MARKET_H
 #include <string>
 #include <unordered_map>
 
@@ -9,7 +11,7 @@ using namespace std;
 class Market {
    private:
     unordered_map<string, Stock> stocksMap;
-    unordered_map<int, User> usersMap;
+    unordered_map<string, User> usersMap;
 
    public:
     Market() = default;
@@ -23,6 +25,9 @@ class Market {
     bool addUser(const User& user);
     User* getUser(const string& username);
     
-    bool placeOrder(const Order* order);
+    bool placeOrder(Order* order);
     void matchTicker(const string& ticker);
 };
+
+
+#endif

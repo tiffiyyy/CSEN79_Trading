@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { isAuthenticated, setAuthenticated } from "../components/ProtectedRoute";
+import { isAuthenticated, setAuthenticated, getCurrentUsername } from "../components/ProtectedRoute";
 import "./Login.css";
 
 const USERNAMES_KEY = "trading_usernames";
@@ -71,11 +71,14 @@ export function Login() {
   };
 
   if (loggedIn) {
+    const currentUser = getCurrentUsername();
     return (
       <main className="login-page">
         <div className="login-card">
           <h1 className="login-card__title">Log in</h1>
-          <p className="login-card__subtitle">You are already logged in.</p>
+          <p className="login-card__subtitle">
+            You are already logged in as {currentUser ?? "unknown"}.
+          </p>
           <button
             type="button"
             className="btn btn--primary login-card__btn"

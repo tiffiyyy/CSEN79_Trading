@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { getCurrentUsername } from "../components/ProtectedRoute";
 import { StockTable, type StockRow } from "../components/StockTable";
 import { InventorySlot, type Holding } from "../components/InventorySlot";
+import { addTransaction } from "../utils/transactionStorage";
 import "./Selection.css";
 
 const SAMPLE_ETFS: StockRow[] = [
@@ -26,11 +28,9 @@ const DEMO_HOLDINGS: Holding[] = [
 
 export function Selection() {
   const navigate = useNavigate();
-  const account = ["-", 1, 2, 3];
+  const currentUsername = getCurrentUsername() ?? "-";
   const action = ["-", "Buy", "Sell", "Cancel"];
   const order = ["-", "Limit Order", "Market Order", "Cancel Order"];
-
-  const [selectedAccount, setSelectedAccount] = useState("-");
   const [selectedAction, setSelectedAction] = useState("-");
   const [selectedOrder, setSelectedOrder] = useState("-");
   const [numShares, setNumShares] = useState("");
@@ -52,6 +52,26 @@ export function Selection() {
   const inventoryRows = Math.max(4, Math.ceil(Math.max(holdings.length, 36) / 9));
   const totalSlots = inventoryRows * 9;
 
+  const orderTypeLabel = selectedOrder === "-" ? "Market Order" : selectedOrder;
+
+  const recordTransaction = (payload: {
+    action: string;
+    balanceChange: number;
+    amountBoughtSold: number;
+    symbol: string;
+    company: string;
+  }) => {
+    addTransaction(currentUsername, {
+      action: payload.action,
+      orderType: orderTypeLabel,
+      balanceChange: payload.balanceChange,
+      amountBoughtSold: payload.amountBoughtSold,
+      symbol: payload.symbol,
+      company: payload.company,
+      timestamp: Date.now(),
+    });
+  };
+
   const handleBuyClick = () => {
     if (selectedAction !== "Buy" || !selectedRow || numSharesVal <= 0) return;
     const newHolding: Holding = {
@@ -65,6 +85,33 @@ export function Selection() {
       changePercent: selectedRow.changePercent,
     };
     setHoldings((prev) => [...prev, newHolding]);
+    recordTransaction({
+      action: "Buy",
+      balanceChange: -orderValue,
+      amountBoughtSold: numSharesVal,
+      symbol: selectedRow.symbol,
+      company: selectedRow.company,
+    });
+    navigate("/transaction");
+  };
+
+  const handleTransactionSubmit = () => {
+    if (selectedAction === "-") return;
+    const symbol = selectedRow?.symbol ?? "—";
+    const company = selectedRow?.company ?? "—";
+    if (selectedAction === "Buy") {
+      recordTransaction({ action: "Buy", balanceChange: 0, amountBoughtSold: 0, symbol, company });
+    } else if (selectedAction === "Sell") {
+      recordTransaction({
+        action: "Sell",
+        balanceChange: orderValue,
+        amountBoughtSold: numSharesVal,
+        symbol,
+        company,
+      });
+    } else {
+      recordTransaction({ action: "Cancel", balanceChange: 0, amountBoughtSold: 0, symbol, company });
+    }
     navigate("/transaction");
   };
 
@@ -102,10 +149,8 @@ export function Selection() {
         <div className="account-box">
             <div className="selections">
               <p>ACCOUNT</p>
-              <select value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)}>
-                {account.map((a) => (
-                  <option key={a} value={String(a)}>{a}</option>
-                ))}
+              <select value={currentUsername} onChange={() => {}} aria-label="Current account">
+                <option value={currentUsername}>{currentUsername}</option>
               </select>
             </div>
           </div>
@@ -153,11 +198,9 @@ export function Selection() {
             {selectedAction === "Buy" && selectedRow && numSharesVal > 0 ? (
               <button onClick={handleBuyClick}>Buy</button>
             ) : (
-              <Link to="/transaction">
-                <button disabled={selectedAction === "-"}>
-                  {selectedAction === "-" ? "Select an Action" : selectedAction}
-                </button>
-              </Link>
+              <button disabled={selectedAction === "-"} onClick={handleTransactionSubmit}>
+                {selectedAction === "-" ? "Select an Action" : selectedAction}
+              </button>
             )}
           </div>
       </div>

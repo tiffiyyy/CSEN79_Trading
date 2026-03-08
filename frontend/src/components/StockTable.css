@@ -4,7 +4,7 @@
   overflow-x: auto;
   overflow-y: auto;
   background: #2a2a2e;
-  border: 1px solid #8b7355;
+  border: 1px solid #555;
   border-radius: 0;
 }
 
@@ -22,13 +22,13 @@
   text-align: left;
   padding: 0.5rem 0.75rem;
   font-weight: 600;
-  color: #c4a574;
-  border-bottom: 2px solid #8b7355;
+  color: #e5e5e5;
+  border-bottom: 2px solid #555;
   white-space: nowrap;
 }
 
 .stock-table__row {
-  border-bottom: 1px solid #5c4a32;
+  border-bottom: 1px solid #404040;
 }
 
 .stock-table__row:last-child {
@@ -36,7 +36,7 @@
 }
 
 .stock-table__row:hover {
-  background: rgba(196, 165, 116, 0.08);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .stock-table__row[role="button"] {
@@ -44,12 +44,12 @@
 }
 
 .stock-table__row--selected {
-  background: rgba(139, 115, 85, 0.35);
-  border-left: 3px solid #8b7355;
+  background: rgba(255, 255, 255, 0.1);
+  border-left: 3px solid #666;
 }
 
 .stock-table__row--selected:hover {
-  background: rgba(139, 115, 85, 0.4);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .stock-table__cell {

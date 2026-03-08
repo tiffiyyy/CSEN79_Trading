@@ -3,8 +3,11 @@
 #include "user.h"
 using namespace std;
 
+// constructor 
 Stock::Stock(string newTicker) : ticker(newTicker), lastTradedPrice(0.0) {}
 
+
+// helper functions 
 string Stock::getTicker() {
     return ticker;
 }
@@ -17,18 +20,39 @@ void Stock::setLastTradedPrice(double newLastTradedPrice) {
     lastTradedPrice = newLastTradedPrice;
 }
 
+
+// initializing market orders 
+void Stock::marketOrder(Order *order) {
+    order->status = PENDING; 
+    while (order->status == PENDING) {
+        if (order->buyOrSell == BUY) {
+            order->price = sellOrder.top()->price; 
+        }
+        else {
+            order->price = buyOrder.top()->price; 
+        }
+        executeOrder(order); 
+    }
+}
+
+
+// pushes buy order onto the buy pq 
 void Stock::placeBuyOrder(Order* order) {
     if (!order) return;
     order->status = PENDING;
     buyOrders.push(order);
 }
 
+
+// pushes sell order onto the sell pq 
 void Stock::placeSellOrder(Order* order) {
     if (!order) return;
     order->status = PENDING;
     sellOrders.push(order);
 }
 
+
+// 
 void Stock::executeOrder(Order* incomingOrder) {
     if (!incomingOrder || incomingOrder->ticker != ticker || incomingOrder->quantity <= 0) {
         return;
@@ -51,6 +75,19 @@ void Stock::executeOrder(Order* incomingOrder) {
 }
 
 
+// cancels a pending limit order 
+void Stock::cancelOrder(Order* order) {
+    if (!order) return; 
+    if (order->status != PENDING) return; 
+    order->status = CANCELLED; 
+    return; 
+}
+
+
+// matches top buy order with top sell order and fulfills the respective orders 
+    // updates the price, portfolio, and balance 
+    // any left over money offerred by the buy order will be returned to the user 
+// returns make_pair(buyOrder, sellOrder)
 pair<Order* , Order*> Stock::matchOrders() {
     if (buyOrders.empty() || sellOrders.empty()) {
         return make_pair(nullptr, nullptr);

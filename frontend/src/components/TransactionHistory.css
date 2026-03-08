@@ -1,0 +1,137 @@
+.transaction-history {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.transaction-history--compact .transaction-history-table-wrap {
+  max-height: 280px;
+}
+
+.transaction-history-panel {
+  width: 100%;
+  box-sizing: border-box;
+  border: 4px solid #555;
+  background: linear-gradient(180deg, #2a2a2a 0%, #222 8px, #1a1a1a 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 4px 0 #404040,
+    0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.transaction-history-panel__title {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #f5f5f5;
+  background: rgba(0, 0, 0, 0.25);
+  border-bottom: 2px solid #404040;
+}
+
+.transaction-history-panel__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid #404040;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.transaction-history-panel__search-input {
+  flex: 1;
+  min-width: 180px;
+  box-sizing: border-box;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9375rem;
+  border: 2px solid #404040;
+  background: #1a1a1a;
+  color: #f5f5f5;
+}
+
+.transaction-history-panel__date-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: #a3a3a3;
+}
+
+.transaction-history-panel__date-input {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.875rem;
+  border: 2px solid #404040;
+  background: #1a1a1a;
+  color: #f5f5f5;
+}
+
+.transaction-history-panel__content {
+  padding: 0.75rem;
+}
+
+.transaction-history-table-wrap {
+  width: 100%;
+  max-height: 420px;
+  overflow-x: auto;
+  overflow-y: auto;
+  background: #2a2a2e;
+  border: 1px solid #555;
+}
+
+.transaction-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.transaction-history-table__th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #2a2a2e;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  color: #e5e5e5;
+  border-bottom: 2px solid #555;
+  white-space: nowrap;
+}
+
+.transaction-history-table__row {
+  border-bottom: 1px solid #404040;
+}
+
+.transaction-history-table__row:last-child {
+  border-bottom: none;
+}
+
+.transaction-history-table__row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.transaction-history-table__cell {
+  padding: 0.5rem 0.75rem;
+  color: #e4e4e7;
+}
+
+.transaction-history-table__empty {
+  text-align: center;
+  color: #71717a;
+  padding: 2rem;
+}
+
+.transaction-history-table__buy {
+  color: #22c55e;
+}
+
+.transaction-history-table__sell {
+  color: #ef4444;
+}
+
+.transaction-history-table__up {
+  color: #22c55e;
+}
+
+.transaction-history-table__down {
+  color: #ef4444;
+}

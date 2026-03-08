@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { getCurrentUsername, clearAuthenticated } from "../components/ProtectedRoute";
+import { TransactionHistory } from "../components/TransactionHistory";
 import "./Profile.css";
 
 export function Profile() {
@@ -37,6 +38,8 @@ export function Profile() {
           <span className="profile-stat-card__value">—</span>
         </div>
       </section>
+
+      <TransactionHistory title="Transaction History" compact />
 
       <button type="button" className="profile-page__logout btn btn--primary" onClick={handleLogOut}>
         Log out

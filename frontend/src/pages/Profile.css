@@ -28,6 +28,11 @@
   text-align: center;
 }
 
+.profile-page .transaction-history {
+  max-width: 900px;
+  margin: 2rem auto;
+}
+
 .profile-page__logout {
   display: block;
   margin: 2rem auto 0;

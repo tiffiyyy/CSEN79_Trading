@@ -29,7 +29,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/selection" element={<ProtectedRoute><Selection /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/transaction" element={<Transaction />} />
+          <Route path="/transaction" element={<ProtectedRoute><Transaction /></ProtectedRoute>} />
         </Routes>
         <Footer />
       </div>

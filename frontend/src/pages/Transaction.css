@@ -1,10 +1,21 @@
-.page {
-    display: flex;
-    text-align: center;
-    flex-direction: column;
-    min-height: 100vh;
-    padding-left: 2rem;
-    padding-top: 4rem;
-    background-color: #0a0a0b;
-    color: #e4e4e7;
+.page.transaction-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 5rem 1.5rem 4rem;
+  background-color: #0a0a0b;
+  color: #e4e4e7;
+  text-align: left;
+}
+
+.page.transaction-page .page__title {
+  text-align: center;
+  margin: 0 0 1.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #f5f5f5;
+}
+
+.transaction-page .transaction-history {
+  margin-top: 0;
 }

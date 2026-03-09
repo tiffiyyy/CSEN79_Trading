@@ -38,8 +38,12 @@ class Stock {
         double getLastTradedPrice();
         void setLastTradedPrice(double newLastTradedPrice);
 
-        // initializing market orders 
-        void marketOrder(Order *order); 
+        // update balance 
+        void balance(Order *order); 
+        // execute buy market order 
+        void buyMarketOrder(Order *order); 
+        // execute sell market order 
+        void sellMarketOrder(Order *order); 
         // pushes buy order onto the buy pq 
         void placeBuyOrder(Order* order);
         // pushes sell order onto the sell pq 

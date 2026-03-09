@@ -12,12 +12,15 @@ click of a button.
 Tiffany Le 
 - frontend 
 - helper functions 
+
 Linus Wong 
 - works with ethan 
+
 Natesh Vemuri 
 - connect to webserver (backend) 
 - interface w user + stock class 
 - make endpoints, api stuffs 
+
 Ethan Huang 
 - create queue, buy order, sell order 
 - how to make the stock work 

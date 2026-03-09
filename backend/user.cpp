@@ -1,7 +1,9 @@
 #include "user.h"
 
 // constructor 
-User::User(string username) : username(username) {}
+User::User(string username) : username(username) {
+    portfolio.balance = 10000.0;
+}
 
 
 // helper functions 

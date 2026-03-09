@@ -49,27 +49,44 @@ bool Market::placeOrder(Order* order) {
     if (!order) {
         return false;
     }
-    if (!order->user || order->price <= 0 || order->quantity <= 0) {
+    if (!order->user || order->quantity <= 0) {
         return false;
-    }
-
-    Portfolio& portfolio = order->user->getPortfolio();
-    if (order->buyOrSell == BUY) {
-        double requiredCash = order->price * order->quantity;
-        if (portfolio.balance < requiredCash) {
-            return false;
-        }
-    } else {
-        auto it = portfolio.stockQuantities.find(order->ticker);
-        if (it == portfolio.stockQuantities.end() || it->second < order->quantity) {
-            return false;
-        }
     }
 
     Stock* stock = getStock(order->ticker);
     if (!stock) {
         return false; // Stock not found
     }
+
+    Portfolio& portfolio = order->user->getPortfolio();
+    
+    if (order->buyOrSell == BUY) {
+        // For buy orders, calculate required cash upfront
+        double pricePerShare = order->price;
+        
+        // For market orders (price = 0), use last traded price
+        if (pricePerShare <= 0) {
+            pricePerShare = stock->getLastTradedPrice();
+            // If stock has never been traded, use a default or small price
+            if (pricePerShare <= 0) {
+                pricePerShare = 100.0; // Default estimate
+            }
+        }
+        
+        double requiredCash = pricePerShare * order->quantity;
+        if (portfolio.balance < requiredCash) {
+            return false; // Not enough cash
+        }
+        
+        // Reserve the cash by deducting it immediately
+        portfolio.balance -= requiredCash;
+    } else {
+        // For sell orders, reserve the shares
+        if (!portfolio.removeShares(order->ticker, order->quantity)) {
+            return false; // Not enough shares
+        }
+    }
+
     order->user->addOrder(order);
     stock->executeOrder(order);
     return true;

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUsername } from "../components/ProtectedRoute";
 import { StockTable, type StockRow } from "../components/StockTable";
 import { InventorySlot, type Holding } from "../components/InventorySlot";
 import { addTransaction } from "../utils/transactionStorage";
+import { placeBuyOrder, placeSellOrder, cancelOrder, getBalance } from "../utils/apiCalls";
 import "./Selection.css";
 
 const SAMPLE_ETFS: StockRow[] = [
@@ -39,6 +40,19 @@ export function Selection() {
   const [holdings, setHoldings] = useState<Holding[]>(DEMO_HOLDINGS);
   const [accountBalance, setAccountBalance] = useState(0);
 
+  const fetchBalance = async () => {
+    try {
+      const response = await getBalance();
+      setAccountBalance(response.balance);
+    } catch (error) {
+      console.error("Failed to fetch balance:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchBalance();
+  }, []);
+
   const filteredEtfs = symbolSearch.trim()
     ? SAMPLE_ETFS.filter((row) =>
         row.symbol.toLowerCase().includes(symbolSearch.trim().toLowerCase())
@@ -72,47 +86,69 @@ export function Selection() {
     });
   };
 
-  const handleBuyClick = () => {
+  const handleBuyClick = async () => {
     if (selectedAction !== "Buy" || !selectedRow || numSharesVal <= 0) return;
-    const newHolding: Holding = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      symbol: selectedRow.symbol,
-      company: selectedRow.company,
-      shares: numSharesVal,
-      totalValue: orderValue,
-      pricePerShare: selectedRow.price,
-      change: selectedRow.change,
-      changePercent: selectedRow.changePercent,
-    };
-    setHoldings((prev) => [...prev, newHolding]);
-    recordTransaction({
-      action: "Buy",
-      balanceChange: -orderValue,
-      amountBoughtSold: numSharesVal,
-      symbol: selectedRow.symbol,
-      company: selectedRow.company,
-    });
-    navigate("/transaction");
+    
+    try {
+      const orderType = selectedOrder === "-" ? "market" : selectedOrder.toLowerCase();
+      await placeBuyOrder(selectedRow.symbol, orderType, numSharesVal);
+      
+      const newHolding: Holding = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        symbol: selectedRow.symbol,
+        company: selectedRow.company,
+        shares: numSharesVal,
+        totalValue: orderValue,
+        pricePerShare: selectedRow.price,
+        change: selectedRow.change,
+        changePercent: selectedRow.changePercent,
+      };
+      setHoldings((prev) => [...prev, newHolding]);
+      recordTransaction({
+        action: "Buy",
+        balanceChange: -orderValue,
+        amountBoughtSold: numSharesVal,
+        symbol: selectedRow.symbol,
+        company: selectedRow.company,
+      });
+      await fetchBalance();
+      navigate("/transaction");
+    } catch (error) {
+      console.error("Buy order failed:", error);
+      alert("Failed to place buy order. Please try again.");
+    }
   };
 
-  const handleTransactionSubmit = () => {
-    if (selectedAction === "-") return;
-    const symbol = selectedRow?.symbol ?? "—";
-    const company = selectedRow?.company ?? "—";
-    if (selectedAction === "Buy") {
-      recordTransaction({ action: "Buy", balanceChange: 0, amountBoughtSold: 0, symbol, company });
-    } else if (selectedAction === "Sell") {
-      recordTransaction({
-        action: "Sell",
-        balanceChange: orderValue,
-        amountBoughtSold: numSharesVal,
-        symbol,
-        company,
-      });
-    } else {
-      recordTransaction({ action: "Cancel", balanceChange: 0, amountBoughtSold: 0, symbol, company });
+  const handleTransactionSubmit = async () => {
+    if (selectedAction === "-" || !selectedRow) return;
+    
+    const symbol = selectedRow.symbol;
+    const company = selectedRow.company;
+    const orderType = selectedOrder === "-" ? "market" : selectedOrder.toLowerCase();
+    
+    try {
+      if (selectedAction === "Buy") {
+        await placeBuyOrder(symbol, orderType, numSharesVal);
+        recordTransaction({ action: "Buy", balanceChange: -orderValue, amountBoughtSold: numSharesVal, symbol, company });
+      } else if (selectedAction === "Sell") {
+        await placeSellOrder(symbol, orderType, numSharesVal);
+        recordTransaction({
+          action: "Sell",
+          balanceChange: orderValue,
+          amountBoughtSold: numSharesVal,
+          symbol,
+          company,
+        });
+      } else if (selectedAction === "Cancel") {
+        await cancelOrder(symbol, orderType, numSharesVal);
+        recordTransaction({ action: "Cancel", balanceChange: 0, amountBoughtSold: 0, symbol, company });
+      }
+      await fetchBalance();
+      navigate("/transaction");
+    } catch (error) {
+      console.error(`${selectedAction} order failed:`, error);
+      alert(`Failed to ${selectedAction.toLowerCase()} order. Please try again.`);
     }
-    navigate("/transaction");
   };
 
   return (
@@ -195,13 +231,12 @@ export function Selection() {
             <p className="est-value__hint">
               {selectedRow ? `${numSharesVal} × $${pricePerShare.toFixed(2)}` : "Select an ETF and enter num shares"}
             </p>
-            {selectedAction === "Buy" && selectedRow && numSharesVal > 0 ? (
-              <button onClick={handleBuyClick}>Buy</button>
-            ) : (
-              <button disabled={selectedAction === "-"} onClick={handleTransactionSubmit}>
-                {selectedAction === "-" ? "Select an Action" : selectedAction}
-              </button>
-            )}
+            <button 
+              disabled={selectedAction === "-" || !selectedRow || numSharesVal <= 0} 
+              onClick={selectedAction === "Buy" && selectedRow && numSharesVal > 0 ? handleBuyClick : handleTransactionSubmit}
+            >
+              {selectedAction === "-" ? "Select an Action" : selectedAction}
+            </button>
           </div>
       </div>
 

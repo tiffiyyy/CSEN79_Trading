@@ -2,21 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { isAuthenticated, setAuthenticated, getCurrentUsername } from "../components/ProtectedRoute";
 import "./Login.css";
-
-const USERNAMES_KEY = "trading_usernames";
-
-function getUsernames(): string[] {
-  try {
-    const raw = localStorage.getItem(USERNAMES_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function setUsernames(usernames: string[]): void {
-  localStorage.setItem(USERNAMES_KEY, JSON.stringify(usernames));
-}
+import { createAccount, setUserId } from "../utils/apiCalls";
 
 export function Login() {
   const navigate = useNavigate();
@@ -25,21 +11,38 @@ export function Login() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
 
-  const handleCreateAccount = useCallback(() => {
+  const handleCreateAccount = useCallback(async () => {
     setError("");
     const trimmed = username.trim();
     if (!trimmed) {
       setError("Enter a username");
       return;
     }
-    const usernames = getUsernames();
-    if (usernames.includes(trimmed)) {
-      setError("Username already taken");
-      return;
+    
+    try {
+      const result = await createAccount(trimmed);
+      // Check if the response contains an error
+      if (result && typeof result === "object" && "error" in result) {
+        if (result.error === "name_taken") {
+          setError("Username already taken. Please choose another.");
+        } else {
+          setError("Failed to create account. Please try again.");
+        }
+        return;
+      }
+      
+      // Save the user ID from the response
+      if (result && typeof result === "object" && "userId" in result) {
+        const userId = result.userId as number;
+        setUserId(userId);
+      }
+      
+      setAuthenticated(trimmed);
+      navigate("/selection");
+    } catch (err: unknown) {
+      console.error("Failed to create account:", err);
+      setError("Failed to create account. Please try again.");
     }
-    setUsernames([...usernames, trimmed]);
-    setAuthenticated(trimmed);
-    navigate("/selection");
   }, [username, navigate]);
 
   const handleSignIn = useCallback(() => {
@@ -47,11 +50,6 @@ export function Login() {
     const trimmed = username.trim();
     if (!trimmed) {
       setError("Enter your username");
-      return;
-    }
-    const usernames = getUsernames();
-    if (!usernames.includes(trimmed)) {
-      setError("Username not found");
       return;
     }
     setAuthenticated(trimmed);

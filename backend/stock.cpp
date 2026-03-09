@@ -26,10 +26,10 @@ void Stock::marketOrder(Order *order) {
     order->status = PENDING; 
     while (order->status == PENDING) {
         if (order->buyOrSell == BUY) {
-            order->price = sellOrder.top()->price; 
+            order->price = sellOrders.top()->price; 
         }
         else {
-            order->price = buyOrder.top()->price; 
+            order->price = buyOrders.top()->price; 
         }
         executeOrder(order); 
     }

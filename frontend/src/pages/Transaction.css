@@ -19,3 +19,7 @@
 .transaction-page .transaction-history {
   margin-top: 0;
 }
+
+.transaction-page .transaction-history:first-of-type {
+  margin-bottom: 2rem;
+}

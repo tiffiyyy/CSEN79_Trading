@@ -27,5 +27,8 @@ struct Order {
     double price;           // user's price offer per stock 
     int quantity;           // number of shares 
     long long timestamp;    // time when the order is placed 
+    int initialQuantity;
+    double totalValue;
+    double executionPrice;
 };
 #endif

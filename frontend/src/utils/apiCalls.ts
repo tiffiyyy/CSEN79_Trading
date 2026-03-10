@@ -31,14 +31,22 @@ export function createAccount(username: string): Promise<unknown> {
   return callApi("/api/createAccount", "POST", { name: username });
 }
 
-export function placeBuyOrder(symbol: string, orderType: string, shares: number): Promise<unknown> {
+export function placeBuyOrder(symbol: string, orderType: string, shares: number, price?: number): Promise<unknown> {
   const userId = getUserId();
-  return callApi("/api/buy", "POST", { symbol, orderType, shares, userId });
+  const body: Record<string, unknown> = { symbol, orderType, shares, userId };
+  if (price !== undefined && price > 0) {
+    body.price = price;
+  }
+  return callApi("/api/buy", "POST", body);
 }
 
-export function placeSellOrder(symbol: string, orderType: string, shares: number): Promise<unknown> {
+export function placeSellOrder(symbol: string, orderType: string, shares: number, price?: number): Promise<unknown> {
   const userId = getUserId();
-  return callApi("/api/sell", "POST", { symbol, orderType, shares, userId });
+  const body: Record<string, unknown> = { symbol, orderType, shares, userId };
+  if (price !== undefined && price > 0) {
+    body.price = price;
+  }
+  return callApi("/api/sell", "POST", body);
 }
 
 export function cancelOrder(symbol: string, orderType: string = "", shares: number = 0): Promise<unknown> {

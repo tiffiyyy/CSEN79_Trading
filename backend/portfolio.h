@@ -11,20 +11,30 @@ struct Portfolio {
     // total credit available to spend (since credit card is not linked to account for purchases)
     double balance = 0.0;
 
-    // increase the num of shares owned per company 
+    // increase the num of shares owned
     void addShares(const string& ticker, int quantity) {
         if (quantity <= 0) return;
         stockQuantities[ticker] += quantity;
     }
 
-    // decrease the num of shares owned per company 
-    bool removeShares(const string& ticker, int quantity) {
-        if (quantity <= 0) return false;
+    // decrease the num of shares owned
+    void removeShares(const string& ticker, int quantity) {
+        if (quantity <= 0) return;
         auto it = stockQuantities.find(ticker);
-        if (it == stockQuantities.end() || it->second < quantity) return false;
-        it->second -= quantity;
-        if (it->second == 0) stockQuantities.erase(it);
-        return true;
+        if (it != stockQuantities.end()) {
+            it->second -= quantity;
+            if (it->second <= 0) {
+                stockQuantities.erase(it);
+            }
+        }
+    }
+
+    int getShares(const string& ticker) const {
+        auto it = stockQuantities.find(ticker);
+        if (it != stockQuantities.end()) {
+            return it->second;
+        }
+        return 0;
     }
 };
 #endif

@@ -5,6 +5,7 @@ using namespace std;
 #include "user.h"
 #include "order.h"
 #include "market.h"
+#include <limits>
 #include <ctime>
 #include <fstream>
 
@@ -13,6 +14,7 @@ struct OrderRequest {
     char order_type[16];
     double shares;
     double user_id;
+    double price;
 };
 
 // Global file pointer for logging
@@ -57,6 +59,7 @@ bool parse_order_request(struct mg_http_message *hm, struct OrderRequest *req) {
     }
     mg_json_get_num(hm->body, "$.shares", &req->shares);
     mg_json_get_num(hm->body, "$.userId", &req->user_id);
+    mg_json_get_num(hm->body, "$.price", &req->price);
 
     // Basic safety check: ensure the required fields actually exist
     if (req->shares <= 0 || req->user_id == 0 || req->symbol[0] == '\0') {
@@ -221,9 +224,15 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
       newOrder->ticker = string(req.symbol);
       newOrder->buyOrSell = BUY;
       newOrder->status = PENDING;
-      newOrder->price = 0; // Market order
+      newOrder->price = req.price;
+      if (req.price == 0) { // Market order, make it aggressive
+          newOrder->price = std::numeric_limits<double>::max();
+      }
       newOrder->quantity = (int)req.shares;
+      newOrder->initialQuantity = (int)req.shares;
       newOrder->timestamp = time(NULL);
+      newOrder->totalValue = 0;
+      newOrder->executionPrice = 0;
 
       // Place the order in market and match
       if (market.placeOrder(newOrder)) {
@@ -274,9 +283,12 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
       newOrder->ticker = string(req.symbol);
       newOrder->buyOrSell = SELL;
       newOrder->status = PENDING;
-      newOrder->price = 0; // Market order
+      newOrder->price = req.price;
       newOrder->quantity = (int)req.shares;
+      newOrder->initialQuantity = (int)req.shares;
       newOrder->timestamp = time(NULL);
+      newOrder->totalValue = 0;
+      newOrder->executionPrice = 0;
 
       // Place the order in market and match
       if (market.placeOrder(newOrder)) {
@@ -318,8 +330,10 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
           if (i > 0) json_str += ",";
           
           const char* action = (order->buyOrSell == BUY) ? "buy" : "sell";
-          const char* orderType = (order->price == 0) ? "market" : "limit";
           
+          bool isMarket = (order->price == 0 || (order->buyOrSell == BUY && order->price == std::numeric_limits<double>::max()));
+          const char* orderType = isMarket ? "market" : "limit";
+
           const char* status_str;
           switch(order->status) {
             case PENDING: status_str = "pending"; break;
@@ -330,19 +344,18 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
 
           double balanceChange = 0;
           if (order->status == EXECUTED) {
-            // NOTE: This is an estimation. The backend does not store actual execution price for trades.
-            // For market orders (price=0), this will be incorrect.
-            balanceChange = order->price * order->quantity;
+            balanceChange = order->totalValue;
             if (order->buyOrSell == BUY) balanceChange = -balanceChange;
           }
           
           char buffer[1024];
+          int amount = (order->status == EXECUTED) ? order->initialQuantity : order->quantity;
           string order_id_str = to_string(order->id);
           mg_snprintf(buffer, sizeof(buffer),
               "{%m:%m,%m:%m,%m:%m,%m:%g,%m:%d,%m:%m,%m:%m,%m:%lld,%m:%m}",
               MG_ESC("id"), MG_ESC(order_id_str.c_str()), MG_ESC("action"), MG_ESC(action),
               MG_ESC("orderType"), MG_ESC(orderType), MG_ESC("balanceChange"), balanceChange,
-              MG_ESC("amountBoughtSold"), order->quantity, MG_ESC("symbol"), MG_ESC(order->ticker.c_str()),
+              MG_ESC("amountBoughtSold"), amount, MG_ESC("symbol"), MG_ESC(order->ticker.c_str()),
               MG_ESC("company"), MG_ESC(""), MG_ESC("timestamp"), order->timestamp,
               MG_ESC("status"), MG_ESC(status_str));
           json_str += buffer;
@@ -469,6 +482,41 @@ int main() {
   market.addStock("BND");
   market.addStock("ARKK");
   market.addStock("XLF");
+
+  // Initialize company users for each stock to provide initial liquidity.
+  // Each "company" will own all of its stock and be ready to sell it.
+  vector<string> tickers = {"SPY", "QQQ", "IWM", "VTI", "VOO", "EFA", "EEM", "GLD", "BND", "ARKK", "XLF"};
+  double initial_price = 100.0;
+  int initial_shares = 1000000;
+
+  log_api(true, "Initializing market with company accounts and liquidity...\n");
+  for (const string& ticker : tickers) {
+      string company_username = ticker + "_COMPANY";
+      market.addUser(User(company_username));
+      User* company_user = market.getUser(company_username);
+      if (company_user) {
+          // Give the company a lot of shares and money
+          company_user->getPortfolio().addShares(ticker, initial_shares);
+          company_user->getPortfolio().balance = 1000000000; // 1 billion dollars
+
+          // Create a standing sell order to provide liquidity, like an IPO
+          Order* sellOrder = new Order();
+          sellOrder->id = nextOrderId++;
+          sellOrder->user = company_user;
+          sellOrder->ticker = ticker;
+          sellOrder->buyOrSell = SELL;
+          sellOrder->status = PENDING;
+          sellOrder->price = initial_price; // Initial "IPO" price
+          sellOrder->quantity = initial_shares;
+          sellOrder->initialQuantity = initial_shares;
+          sellOrder->timestamp = time(NULL);
+          sellOrder->totalValue = 0;
+          sellOrder->executionPrice = 0;
+
+          market.placeOrder(sellOrder);
+          log_api(true, "\t- Created %s with %d shares at $%.2f\n", company_username.c_str(), initial_shares, initial_price);
+      }
+  }
 
   //START WEB SERVER
   struct mg_mgr mgr;  

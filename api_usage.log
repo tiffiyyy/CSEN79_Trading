@@ -70,3 +70,47 @@ Account created for user: bruh with ID: 1
 Buy order received: User 1 wants to buy 3.000000 shares of VOO (market order)
 Cancel order received: User 1 wants to cancel order 1
 Buy order received: User 1 wants to buy 3.000000 shares of GLD (limit order)
+========== Market Server Started ==========
+Server initialization logging started
+Create account request received
+	Body size: 15, Body: {"name":"fdsf"}
+	Parsed username_ptr: 0x58f98cf28500
+	String username created: 'fdsf'
+	Creating new user...
+	New user created
+Account created for user: fdsf with ID: 1
+Buy order received: User 1 wants to buy 2.000000 shares of EEM (limit)
+Buy order received: User 1 wants to buy 6.000000 shares of IWM (market)
+Sell order received: User 1 wants to sell 2.000000 shares of IWM (market)
+Sell order received: User 1 wants to sell 2.000000 shares of IWM (limit)
+========== Market Server Started ==========
+Server initialization logging started
+Initializing market with company accounts and liquidity...
+	- Created SPY_COMPANY with 1000000 shares at $100.00
+	- Created QQQ_COMPANY with 1000000 shares at $100.00
+	- Created IWM_COMPANY with 1000000 shares at $100.00
+	- Created VTI_COMPANY with 1000000 shares at $100.00
+	- Created VOO_COMPANY with 1000000 shares at $100.00
+	- Created EFA_COMPANY with 1000000 shares at $100.00
+	- Created EEM_COMPANY with 1000000 shares at $100.00
+	- Created GLD_COMPANY with 1000000 shares at $100.00
+	- Created BND_COMPANY with 1000000 shares at $100.00
+	- Created ARKK_COMPANY with 1000000 shares at $100.00
+	- Created XLF_COMPANY with 1000000 shares at $100.00
+Create account request received
+	Body size: 15, Body: {"name":"woah"}
+	Parsed username_ptr: 0x605d90878f10
+	String username created: 'woah'
+	Creating new user...
+	New user created
+Account created for user: woah with ID: 1
+Buy order received: User 1 wants to buy 12.000000 shares of EFA (market)
+Sell order received: User 1 wants to sell 3.000000 shares of EFA (limit)
+Create account request received
+	Body size: 14, Body: {"name":"zuh"}
+	Parsed username_ptr: 0x605d90885780
+	String username created: 'zuh'
+	Creating new user...
+	New user created
+Account created for user: zuh with ID: 2
+Buy order received: User 2 wants to buy 3.000000 shares of EFA (limit)

@@ -77,8 +77,9 @@ export function Selection() {
     if (selectedAction !== "Buy" || !selectedRow || numSharesVal <= 0) return;
     
     try {
-      const orderType = selectedOrder === "-" ? "market" : selectedOrder.toLowerCase();
-      await placeBuyOrder(selectedRow.symbol, orderType, numSharesVal);
+      const orderType = selectedOrder === "Limit Order" ? "limit" : "market";
+      const price = orderType === 'limit' ? Number(limitPrice) : undefined;
+      await placeBuyOrder(selectedRow.symbol, orderType, numSharesVal, price);
       
       const newHolding: Holding = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -104,13 +105,14 @@ export function Selection() {
     
     const symbol = selectedRow.symbol;
     //const company = selectedRow.company;
-    const orderType = selectedOrder === "-" ? "market" : selectedOrder.toLowerCase();
+    const orderType = selectedOrder === "Limit Order" ? "limit" : "market";
+    const price = orderType === 'limit' ? Number(limitPrice) : undefined;
     
     try {
       if (selectedAction === "Buy") {
-        await placeBuyOrder(symbol, orderType, numSharesVal);
+        await placeBuyOrder(symbol, orderType, numSharesVal, price);
       } else if (selectedAction === "Sell") {
-        await placeSellOrder(symbol, orderType, numSharesVal);
+        await placeSellOrder(symbol, orderType, numSharesVal, price);
       }
       await fetchBalance();
       navigate("/transaction");

@@ -15,24 +15,32 @@ function formatBalanceChange(n: number): string {
 
 export interface TransactionHistoryRowProps {
   transaction: TransactionRecord;
+  onCancel?: (orderId: string) => void;
   selected?: boolean;
   onSelect?: () => void;
 }
 
-export function TransactionHistoryRow({ transaction: t, selected, onSelect }: TransactionHistoryRowProps) {
-  const amountPrefix = t.action === "Buy" ? "+" : t.action === "Sell" ? "-" : "";
-  const amountClass = t.action === "Buy" ? "transaction-history-table__buy" : t.action === "Sell" ? "transaction-history-table__sell" : "";
+export function TransactionHistoryRow({ transaction: t, onCancel, selected, onSelect }: TransactionHistoryRowProps) {
+  const actionDisplay = t.action.charAt(0).toUpperCase() + t.action.slice(1);
+  const isBuy = t.action.toLowerCase() === "buy";
+  const isSell = t.action.toLowerCase() === "sell";
+  const amountPrefix = isBuy ? "+" : isSell ? "-" : "";
+  const amountClass = isBuy
+    ? "transaction-history-table__buy"
+    : isSell
+    ? "transaction-history-table__sell"
+    : "";
+  const statusDisplay = t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : "Executed";
 
   return (
     <tr
-      className={`transaction-history-table__row${selected ? " transaction-history-table__row--selected" : ""}${onSelect ? " transaction-history-table__row--clickable" : ""}`}
+      className={`transaction-history-table__row ${selected ? "transaction-history-table__row--selected" : ""}`}
       onClick={onSelect}
       role={onSelect ? "button" : undefined}
       tabIndex={onSelect ? 0 : undefined}
-      onKeyDown={onSelect ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(); } } : undefined}
     >
       <td className="transaction-history-table__cell">{formatTimeMilitary(t.timestamp)}</td>
-      <td className="transaction-history-table__cell">{t.action}</td>
+      <td className={`transaction-history-table__cell ${amountClass}`}>{actionDisplay}</td>
       <td className="transaction-history-table__cell">{t.orderType}</td>
       <td className="transaction-history-table__cell">{t.symbol}</td>
       <td className="transaction-history-table__cell">{t.company}</td>
@@ -46,6 +54,27 @@ export function TransactionHistoryRow({ transaction: t, selected, onSelect }: Tr
           {formatBalanceChange(t.balanceChange)}
         </span>
       </td>
+      <td className="transaction-history-table__cell">
+        <span className={`transaction-history-table__status transaction-history-table__status--${t.status ?? 'executed'}`}>
+          {statusDisplay}
+        </span>
+      </td>
+      {onCancel && (
+        <td className="transaction-history-table__cell transaction-history-table__cell--action">
+          {t.status === "pending" && (
+            <button
+              type="button"
+              className="btn btn--secondary btn--small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCancel(t.id);
+              }}
+            >
+              Cancel
+            </button>
+          )}
+        </td>
+      )}
     </tr>
   );
 }

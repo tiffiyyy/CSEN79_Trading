@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { getCurrentUsername } from "../components/ProtectedRoute";
 import { StockTable, type StockRow } from "../components/StockTable";
 import { InventorySlot, type Holding } from "../components/InventorySlot";
-import { addTransaction } from "../utils/transactionStorage";
 import { placeBuyOrder, placeSellOrder, getBalance } from "../utils/apiCalls";
 import "./Selection.css";
 
@@ -72,27 +71,7 @@ export function Selection() {
   const inventoryRows = Math.max(4, Math.ceil(Math.max(holdings.length, 36) / 9));
   const totalSlots = inventoryRows * 9;
 
-  const orderTypeLabel = selectedOrder === "-" ? "Market Order" : selectedOrder;
-
-  const recordTransaction = (payload: {
-    action: string;
-    balanceChange: number;
-    amountBoughtSold: number;
-    symbol: string;
-    company: string;
-    status?: "PENDING" | "COMPLETED";
-  }) => {
-    addTransaction(currentUsername, {
-      action: payload.action,
-      orderType: orderTypeLabel,
-      balanceChange: payload.balanceChange,
-      amountBoughtSold: payload.amountBoughtSold,
-      symbol: payload.symbol,
-      company: payload.company,
-      timestamp: Date.now(),
-      status: payload.action === "Buy" || payload.action === "Sell" ? "PENDING" : payload.status ?? "COMPLETED",
-    });
-  };
+  //const orderTypeLabel = selectedOrder === "-" ? "Market Order" : selectedOrder;
 
   const handleBuyClick = async () => {
     if (selectedAction !== "Buy" || !selectedRow || numSharesVal <= 0) return;
@@ -112,13 +91,6 @@ export function Selection() {
         changePercent: selectedRow.changePercent,
       };
       setHoldings((prev) => [...prev, newHolding]);
-      recordTransaction({
-        action: "Buy",
-        balanceChange: -orderValue,
-        amountBoughtSold: numSharesVal,
-        symbol: selectedRow.symbol,
-        company: selectedRow.company,
-      });
       await fetchBalance();
       navigate("/transaction");
     } catch (error) {
@@ -131,22 +103,14 @@ export function Selection() {
     if (selectedAction === "-" || !selectedRow) return;
     
     const symbol = selectedRow.symbol;
-    const company = selectedRow.company;
+    //const company = selectedRow.company;
     const orderType = selectedOrder === "-" ? "market" : selectedOrder.toLowerCase();
     
     try {
       if (selectedAction === "Buy") {
         await placeBuyOrder(symbol, orderType, numSharesVal);
-        recordTransaction({ action: "Buy", balanceChange: -orderValue, amountBoughtSold: numSharesVal, symbol, company });
       } else if (selectedAction === "Sell") {
         await placeSellOrder(symbol, orderType, numSharesVal);
-        recordTransaction({
-          action: "Sell",
-          balanceChange: orderValue,
-          amountBoughtSold: numSharesVal,
-          symbol,
-          company,
-        });
       }
       await fetchBalance();
       navigate("/transaction");

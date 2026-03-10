@@ -161,6 +161,17 @@ pair<Order* , Order*> Stock::matchOrders() {
         return make_pair(nullptr, nullptr);
     }
 
+    while (!buyOrders.empty() && buyOrders.top()->status != PENDING) {
+        buyOrders.pop();
+    }
+    while (!sellOrders.empty() && sellOrders.top()->status != PENDING) {
+        sellOrders.pop();
+    }
+
+    if (buyOrders.empty() || sellOrders.empty()) {
+        return make_pair(nullptr, nullptr);
+    }
+
     Order* buyOrder = buyOrders.top();
     Order* sellOrder = sellOrders.top();
 

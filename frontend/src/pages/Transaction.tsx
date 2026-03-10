@@ -1,63 +1,68 @@
 import { useState, useEffect } from "react";
-import { getCurrentUsername } from "../components/ProtectedRoute";
-import { TransactionTablePanel } from "../components/TransactionTablePanel";
 import { TransactionHistory } from "../components/TransactionHistory";
 import {
-  getTransactions,
   getPendingTransactions,
   updateTransactionStatus,
-  addTransaction,
+  type TransactionRecord,
+  fetchTransactions,
 } from "../utils/transactionStorage";
-import type { TransactionRecord } from "../utils/transactionStorage";
 import "./Transaction.css";
 
+const USER_ID_KEY = "trading_user_id";
+
 export function Transaction() {
-  const username = getCurrentUsername();
   const [pendingTransactions, setPendingTransactions] = useState<TransactionRecord[]>([]);
   const [allTransactions, setAllTransactions] = useState<TransactionRecord[]>([]);
-  const [selectedPendingId, setSelectedPendingId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const userId = localStorage.getItem(USER_ID_KEY);
+
+  const loadTransactions = () => {
+    if (!userId) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    Promise.all([
+      getPendingTransactions(userId),
+      fetchTransactions(userId),
+    ]).then(([pending, all]) => {
+      setPendingTransactions(pending);
+      setAllTransactions(all);
+      setIsLoading(false);
+    }).catch(() => setIsLoading(false));
+  };
 
   useEffect(() => {
-    if (username) {
-      setAllTransactions(getTransactions(username));
-      setPendingTransactions(getPendingTransactions(username));
-    }
-  }, [username]);
+    loadTransactions();
+  }, [userId]);
 
-  const handleCancelPending = (transaction: TransactionRecord) => {
-    if (!username) return;
-    updateTransactionStatus(username, transaction.id, "CANCELLED");
-    addTransaction(username, {
-      action: "Cancel",
-      orderType: transaction.orderType,
-      balanceChange: 0,
-      amountBoughtSold: transaction.amountBoughtSold,
-      symbol: transaction.symbol,
-      company: transaction.company,
-      timestamp: Date.now(),
-    });
-    setAllTransactions(getTransactions(username));
-    setPendingTransactions(getPendingTransactions(username));
-    setSelectedPendingId(null);
+  const handleCancelTransaction = async (orderId: string) => {
+    if (!userId || !orderId) return;
+
+    const success = await updateTransactionStatus(userId, orderId, "cancelled");
+    if (success) {
+      // Refresh the transactions list after cancellation
+      loadTransactions();
+    } else {
+      alert("Failed to cancel order.");
+    }
   };
+
+  if (isLoading) {
+    return <div className="page transaction-page">Loading transactions...</div>;
+  }
 
   return (
     <div className="page transaction-page">
       <h2 className="page__title">Transactions</h2>
-      {username && (
-        <TransactionTablePanel
-          title="Pending Transactions"
+      {pendingTransactions.length > 0 && (
+        <TransactionHistory
+          title="Pending Orders"
           transactions={pendingTransactions}
-          compact
-          showToolbar
-          emptyMessage="No pending transactions."
-          selectedId={selectedPendingId}
-          onSelectRow={(tx) => setSelectedPendingId(tx?.id ?? null)}
-          onCancel={handleCancelPending}
-          cancelButtonLabel="Cancel transaction"
+          onCancel={handleCancelTransaction}
         />
       )}
-      <TransactionHistory title="Transaction History" compact />
+      <TransactionHistory title="All Transactions" transactions={allTransactions} />
     </div>
   );
 }

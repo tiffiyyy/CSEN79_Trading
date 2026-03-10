@@ -1,5 +1,6 @@
 #include "mongoose_dependencies/mongoose.h"
 using namespace std;
+#include <string>
 #include "stock.h"
 #include "user.h"
 #include "order.h"
@@ -37,6 +38,7 @@ void log_api(bool logToFile, const char* format, ...) {
 
 static Market market;
 static int nextUserId = 1;
+static int nextOrderId = 1;
 static unordered_map<string, int> usernameToId;
 static unordered_map<int, User*> idToUser;
 
@@ -64,6 +66,37 @@ bool parse_order_request(struct mg_http_message *hm, struct OrderRequest *req) {
     return true;
 }
 
+// Helper function to parse username from HTTP request
+bool parse_username(struct mg_http_message *hm, string& username) {
+    // Validate body
+    if (hm->body.len == 0) {
+        log_api(true, "\tError: Empty request body\n");
+        return false;
+    }
+
+    log_api(true, "\tBody size: %lu, Body: %.*s\n", (unsigned long)hm->body.len,
+            (int)hm->body.len, hm->body.buf);
+
+    // Parse username from JSON body
+    char *username_ptr = mg_json_get_str(hm->body, "$.name");
+    if (!username_ptr) {
+        log_api(true, "\tError: Failed to parse username from JSON\n");
+        return false;
+    }
+
+    log_api(true, "\tParsed username_ptr: %p\n", (void*)username_ptr);
+
+    char username_buffer[256];
+    memset(username_buffer, 0, sizeof(username_buffer));
+    snprintf(username_buffer, sizeof(username_buffer) - 1, "%s", username_ptr);
+    username_buffer[sizeof(username_buffer) - 1] = '\0';
+
+    username = string(username_buffer);
+    log_api(true, "\tString username created: '%s'\n", username.c_str());
+
+    return true;
+}
+
 // Connection event handler function
 static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
   if (ev == MG_EV_HTTP_MSG) {  // New HTTP request received
@@ -87,38 +120,13 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
       }
       log_api(true, "Create account request received\n");
       
-      // Validate body
-      if (hm->body.len == 0) {
-        log_api(true, "\tError: Empty request body\n");
-        mg_http_reply(c, 400, "Content-Type: application/json\r\n", 
-                      "{\"error\": \"Empty request body\"}\n");
-        return;
-      }
-      
-      log_api(true, "\tBody size: %lu, Body: %.*s\n", (unsigned long)hm->body.len, 
-             (int)hm->body.len, hm->body.buf);
-      
-      // Parse username from JSON body
-      char *username_ptr = mg_json_get_str(hm->body, "$.name");
-      if (!username_ptr) {
-        log_api(true, "\tError: Failed to parse username from JSON\n");
+      string username;
+      if (!parse_username(hm, username)) {
         mg_http_reply(c, 400, "Content-Type: application/json\r\n", 
                       "{\"error\": \"Missing username\"}\n");
         return;
       }
-      
-      log_api(true, "\tParsed username_ptr: %p\n", (void*)username_ptr);
-      
-      char username_buffer[256];
-      memset(username_buffer, 0, sizeof(username_buffer));
-      snprintf(username_buffer, sizeof(username_buffer) - 1, "%s", username_ptr);
-      username_buffer[sizeof(username_buffer) - 1] = '\0';
-      
-      log_api(true, "\tUsername buffer: '%s'\n", username_buffer);
-      
-      string username(username_buffer);
-      log_api(true, "\tString username created: '%s'\n", username.c_str());
-      
+
       // Check if username already exists in market
       User* existingUser = market.getUser(username);
       if (existingUser != NULL) {
@@ -154,32 +162,12 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
       }
       log_api(true, "Sign in request received\n");
 
-      // Validate body
-      if (hm->body.len == 0) {
-        log_api(true, "\tError: Empty request body\n");
-        mg_http_reply(c, 400, "Content-Type: application/json\r\n",
-                      "{\"error\": \"Empty request body\"}\n");
-        return;
-      }
-
-      log_api(true, "\tBody size: %lu, Body: %.*s\n", (unsigned long)hm->body.len,
-              (int)hm->body.len, hm->body.buf);
-
-      // Parse username from JSON body
-      char *username_ptr = mg_json_get_str(hm->body, "$.name");
-      if (!username_ptr) {
-        log_api(true, "\tError: Failed to parse username from JSON\n");
+      string username;
+      if (!parse_username(hm, username)) {
         mg_http_reply(c, 400, "Content-Type: application/json\r\n",
                       "{\"error\": \"Missing username\"}\n");
         return;
       }
-
-      char username_buffer[256];
-      memset(username_buffer, 0, sizeof(username_buffer));
-      snprintf(username_buffer, sizeof(username_buffer) - 1, "%s", username_ptr);
-      username_buffer[sizeof(username_buffer) - 1] = '\0';
-
-      string username(username_buffer);
       log_api(true, "\tAttempting to sign in user: '%s'\n", username.c_str());
 
       // Check if username exists in market
@@ -228,6 +216,7 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
 
       // Create a new order
       Order* newOrder = new Order();
+      newOrder->id = nextOrderId++;
       newOrder->user = user;
       newOrder->ticker = string(req.symbol);
       newOrder->buyOrSell = BUY;
@@ -280,6 +269,7 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
 
       // Create a new order
       Order* newOrder = new Order();
+      newOrder->id = nextOrderId++;
       newOrder->user = user;
       newOrder->ticker = string(req.symbol);
       newOrder->buyOrSell = SELL;
@@ -300,32 +290,112 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
       return;
     }
 
+    if (mg_match(hm->uri, mg_str("/api/transactions"), NULL)) {
+      if (!mg_match(hm->method, mg_str("POST"), NULL)) {
+        mg_http_reply(c, 405, "", "{\"error\": \"Method not allowed\"}\n");
+        return;
+      }
+
+      double user_id_double;
+      if (mg_json_get_num(hm->body, "$.userId", &user_id_double) == 0) {
+        mg_http_reply(c, 400, "Content-Type: application/json\r\n",
+                      "{\"error\": \"Missing userId\"}\n");
+        return;
+      }
+      int user_id = (int)user_id_double;
+
+      User* user = idToUser[user_id];
+      if (!user) {
+        mg_http_reply(c, 404, "Content-Type: application/json\r\n",
+                      "{\"error\": \"User not found\"}\n");
+        return;
+      }
+
+      const vector<Order*>& orders = user->getOrders();
+      string json_str = "[";
+      for (size_t i = 0; i < orders.size(); ++i) {
+          Order* order = orders[i];
+          if (i > 0) json_str += ",";
+          
+          const char* action = (order->buyOrSell == BUY) ? "buy" : "sell";
+          const char* orderType = (order->price == 0) ? "market" : "limit";
+          
+          const char* status_str;
+          switch(order->status) {
+            case PENDING: status_str = "pending"; break;
+            case EXECUTED: status_str = "executed"; break;
+            case CANCELLED: status_str = "cancelled"; break;
+            default: status_str = "unknown";
+          }
+
+          double balanceChange = 0;
+          if (order->status == EXECUTED) {
+            // NOTE: This is an estimation. The backend does not store actual execution price for trades.
+            // For market orders (price=0), this will be incorrect.
+            balanceChange = order->price * order->quantity;
+            if (order->buyOrSell == BUY) balanceChange = -balanceChange;
+          }
+          
+          char buffer[1024];
+          string order_id_str = to_string(order->id);
+          mg_snprintf(buffer, sizeof(buffer),
+              "{%m:%m,%m:%m,%m:%m,%m:%g,%m:%d,%m:%m,%m:%m,%m:%lld,%m:%m}",
+              MG_ESC("id"), MG_ESC(order_id_str.c_str()), MG_ESC("action"), MG_ESC(action),
+              MG_ESC("orderType"), MG_ESC(orderType), MG_ESC("balanceChange"), balanceChange,
+              MG_ESC("amountBoughtSold"), order->quantity, MG_ESC("symbol"), MG_ESC(order->ticker.c_str()),
+              MG_ESC("company"), MG_ESC(""), MG_ESC("timestamp"), order->timestamp,
+              MG_ESC("status"), MG_ESC(status_str));
+          json_str += buffer;
+      }
+      json_str += "]";
+      mg_http_reply(c, 200, "Content-Type: application/json\r\n", "%s", json_str.c_str());
+      return;
+    }
+
     if (mg_match(hm->uri, mg_str("/api/cancel"), NULL)) {
       if (!mg_match(hm->method, mg_str("POST"), NULL)) {
         mg_http_reply(c, 405, "", "{\"error\": \"Method not allowed\"}\n");
         return; 
       }
 
-      struct OrderRequest req;
-      if (!parse_order_request(hm, &req)) {
-          mg_http_reply(c, 400, "", "{\"error\": \"Invalid JSON payload\"}\n");
+      double user_id_double;
+      if (mg_json_get_num(hm->body, "$.userId", &user_id_double) == 0) {
+        mg_http_reply(c, 400, "Content-Type: application/json\r\n", "{\"error\": \"Missing userId\"}\n");
+        return;
+      }
+      int user_id = (int)user_id_double;
+
+      double order_id_double;
+      if (mg_json_get_num(hm->body, "$.orderId", &order_id_double) == 0) {
+        mg_http_reply(c, 400, "Content-Type: application/json\r\n", "{\"error\": \"Missing orderId\"}\n");
+        return;
+      }
+      int order_id_to_cancel = (int)order_id_double;
+
+      log_api(true, "Cancel order received: User %d wants to cancel order %d\n", user_id, order_id_to_cancel);
+
+      User* user = idToUser[user_id];
+      if (!user) {
+        mg_http_reply(c, 404, "Content-Type: application/json\r\n", "{\"error\": \"User not found\"}\n");
+        return;
+      }
+
+      Order* order_to_cancel = nullptr;
+      for (auto* order : user->getOrders()) {
+          if (order->id == order_id_to_cancel) {
+              order_to_cancel = order;
+              break;
+          }
+      }
+
+      if (!order_to_cancel || order_to_cancel->status != PENDING) {
+          mg_http_reply(c, 400, "Content-Type: application/json\r\n", "{\"error\": \"Order not pending or not found\"}\n");
           return;
       }
 
-      log_api(true, "Cancel order received: User %lu wants to cancel orders for %s\n", 
-             (unsigned long)req.user_id, req.symbol);
-
-      // Get the stock from market
-      Stock* stock = market.getStock(string(req.symbol));
-      if (stock == NULL) {
-          mg_http_reply(c, 400, "Content-Type: application/json\r\n", 
-                        "{\"error\": \"Stock not found\"}\n");
-          return;
-      }
-
-      // Note: Actual cancel logic would require finding specific orders by user_id
-      // and marking them as CANCELLED. Implementation depends on how orders are tracked.
-      // For now, return success as the infrastructure is being built.
+      Stock* stock = market.getStock(order_to_cancel->ticker);
+      if (stock) stock->cancelOrder(order_to_cancel);
+      
       mg_http_reply(c, 200, "Content-Type: application/json\r\n", 
                     "{\"status\": \"success\", \"message\": \"Cancel order processed\"}\n");
       return;

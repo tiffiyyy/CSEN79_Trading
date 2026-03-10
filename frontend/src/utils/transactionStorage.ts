@@ -1,5 +1,3 @@
-export type TransactionStatus = "PENDING" | "COMPLETED" | "CANCELLED";
-
 export interface TransactionRecord {
   id: string;
   action: string;
@@ -9,50 +7,56 @@ export interface TransactionRecord {
   symbol: string;
   company: string;
   timestamp: number;
-  status?: TransactionStatus;
+  status?: "pending" | "executed" | "cancelled" | "unknown";
 }
 
-const PREFIX = "trading_transactions_";
-
-function key(username: string): string {
-  return `${PREFIX}${username}`;
+export async function getPendingTransactions(userId: string): Promise<TransactionRecord[]> {
+  const transactions = await fetchTransactions(userId);
+  return transactions.filter(t => t.status === "pending");
 }
 
-export function getTransactions(username: string): TransactionRecord[] {
+export async function updateTransactionStatus(
+  userId: string,
+  orderId: string,
+  newStatus: "cancelled"
+): Promise<boolean> {
+  if (newStatus !== "cancelled") {
+    console.error("Only cancellation is supported");
+    return false;
+  }
   try {
-    const raw = localStorage.getItem(key(username));
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
+    const response = await fetch("/api/cancel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: parseInt(userId, 10), orderId: parseInt(orderId, 10) }),
+    });
+    if (!response.ok) {
+      console.error("Failed to cancel transaction:", response.statusText, await response.text());
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error cancelling transaction:", error);
+    return false;
   }
 }
 
-export function addTransaction(
-  username: string,
-  record: Omit<TransactionRecord, "id">,
-): void {
-  const list = getTransactions(username);
-  const withId: TransactionRecord = {
-    ...record,
-    id: `${record.timestamp}-${Math.random().toString(36).slice(2)}`,
-    status: record.status ?? "COMPLETED",
-  };
-  list.unshift(withId);
-  localStorage.setItem(key(username), JSON.stringify(list));
-}
-
-export function updateTransactionStatus(
-  username: string,
-  transactionId: string,
-  status: TransactionStatus,
-): void {
-  const list = getTransactions(username);
-  const index = list.findIndex((t) => t.id === transactionId);
-  if (index === -1) return;
-  list[index] = { ...list[index], status };
-  localStorage.setItem(key(username), JSON.stringify(list));
-}
-
-export function getPendingTransactions(username: string): TransactionRecord[] {
-  return getTransactions(username).filter((t) => t.status === "PENDING");
+export async function fetchTransactions(userId: string): Promise<TransactionRecord[]> {
+  if (!userId) return [];
+  try {
+    const response = await fetch("/api/transactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: parseInt(userId, 10) }),
+    });
+    if (!response.ok) {
+      console.error("Failed to fetch transactions:", response.statusText);
+      return [];
+    }
+    const data: TransactionRecord[] = await response.json();
+    return data.map((t) => ({ ...t, timestamp: t.timestamp * 1000 })).reverse();
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    return [];
+  }
 }

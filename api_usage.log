@@ -38,3 +38,35 @@ Create account request received
 	Creating new user...
 	New user created
 Account created for user: haha with ID: 2
+========== Market Server Started ==========
+Server initialization logging started
+Create account request received
+	Body size: 18, Body: {"name":"tester1"}
+	Parsed username_ptr: 0x58df412456b0
+	String username created: 'tester1'
+	Creating new user...
+	New user created
+Account created for user: tester1 with ID: 1
+Buy order received: User 1 wants to buy 2.000000 shares of EFA (market order)
+========== Market Server Started ==========
+Server initialization logging started
+Create account request received
+	Body size: 16, Body: {"name":"zoink"}
+	Parsed username_ptr: 0x61903633b690
+	String username created: 'zoink'
+	Creating new user...
+	New user created
+Account created for user: zoink with ID: 1
+Buy order received: User 1 wants to buy 5.000000 shares of IWM (market order)
+========== Market Server Started ==========
+Server initialization logging started
+Create account request received
+	Body size: 15, Body: {"name":"bruh"}
+	Parsed username_ptr: 0x628c1bfbb540
+	String username created: 'bruh'
+	Creating new user...
+	New user created
+Account created for user: bruh with ID: 1
+Buy order received: User 1 wants to buy 3.000000 shares of VOO (market order)
+Cancel order received: User 1 wants to cancel order 1
+Buy order received: User 1 wants to buy 3.000000 shares of GLD (limit order)

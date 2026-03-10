@@ -4,6 +4,7 @@
 #include <string>
 #include <utility>
 #include "order.h"
+#include "portfolio.h"
 using namespace std;
 
 // functor to sort the buy priority queue 
@@ -39,7 +40,7 @@ class Stock {
         void setLastTradedPrice(double newLastTradedPrice);
 
         // update balance 
-        void balance(Order *order); 
+        void balance(int price, Portfolio& buy, Portfolio& sell); 
         // execute buy market order 
         void buyMarketOrder(Order *order); 
         // execute sell market order 

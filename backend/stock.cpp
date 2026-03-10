@@ -22,9 +22,9 @@ void Stock::setLastTradedPrice(double newLastTradedPrice) {
 
 
 // update balance 
-void Stock::balance(int price, Portfolio* buy, Portfolio* sell) {
-    buy->balance -= price; 
-    sell->balance += price; 
+void Stock::balance(int price, Portfolio& buy, Portfolio& sell) {
+    buy.balance -= price; 
+    sell.balance += price; 
 } 
 
 
@@ -66,6 +66,7 @@ void Stock::buyMarketOrder(Order *order) {
 }
 
 
+// execute sell market order 
 void Stock::sellMarketOrder(Order *order) {
     if (buyOrders.empty()) return; 
     Order* buyOrder = buyOrders.top();

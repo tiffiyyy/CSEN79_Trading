@@ -1,0 +1,40 @@
+========== Market Server Started ==========
+Server initialization logging started
+Create account request received
+	Body size: 15, Body: {"name":"user"}
+	Parsed username_ptr: 0x63bca8891700
+	Username buffer: 'user'
+	String username created: 'user'
+	Creating new user...
+	New user created
+Account created for user: user with ID: 1
+========== Market Server Started ==========
+Server initialization logging started
+Sign in request received
+	Body size: 17, Body: {"name":"zoinks"}
+	Attempting to sign in user: 'zoinks'
+Create account request received
+	Body size: 13, Body: {"name":"fe"}
+	Parsed username_ptr: 0x57abb2c536b0
+	Username buffer: 'fe'
+	String username created: 'fe'
+	Creating new user...
+	New user created
+Account created for user: fe with ID: 1
+Sign in request received
+	Body size: 13, Body: {"name":"fe"}
+	Attempting to sign in user: 'fe'
+User 'fe' signed in with ID: 1
+Create account request received
+	Body size: 13, Body: {"name":"fe"}
+	Parsed username_ptr: 0x57abb2c5fd20
+	Username buffer: 'fe'
+	String username created: 'fe'
+Create account request received
+	Body size: 15, Body: {"name":"haha"}
+	Parsed username_ptr: 0x57abb2c63d50
+	Username buffer: 'haha'
+	String username created: 'haha'
+	Creating new user...
+	New user created
+Account created for user: haha with ID: 2

@@ -4,12 +4,36 @@ using namespace std;
 #include "user.h"
 #include "order.h"
 #include "market.h"
+#include <ctime>
+#include <fstream>
+
 struct OrderRequest {
     char symbol[16];
     char order_type[16];
     double shares;
     double user_id;
 };
+
+// Global file pointer for logging
+FILE* logFile = NULL;
+
+// Logging function that writes to console and optionally to file
+void log_api(bool logToFile, const char* format, ...) {
+    va_list args;
+    
+    // Print to console
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+    
+    // Print to file if enabled and file is open
+    if (logToFile && logFile) {
+        va_start(args, format);
+        vfprintf(logFile, format, args);
+        va_end(args);
+        fflush(logFile);
+    }
+}
 
 static Market market;
 static int nextUserId = 1;
@@ -43,8 +67,8 @@ bool parse_order_request(struct mg_http_message *hm, struct OrderRequest *req) {
 // Connection event handler function
 static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
   if (ev == MG_EV_HTTP_MSG) {  // New HTTP request received
-    printf("Received HTTP request\n");
-    printf("URI: %.*s\n", (int) ((struct mg_http_message *) ev_data)->uri.len,
+    log_api(false, "Received HTTP request\n");
+    log_api(false, "URI: %.*s\n", (int) ((struct mg_http_message *) ev_data)->uri.len,
            ((struct mg_http_message *) ev_data)->uri.buf);
     struct mg_http_message *hm = (struct mg_http_message *) ev_data;  
     
@@ -61,39 +85,39 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
         mg_http_reply(c, 405, "", "{\"error\": \"Method not allowed\"}\n");
         return; 
       }
-      printf("Create account request received\n");
+      log_api(true, "Create account request received\n");
       
       // Validate body
       if (hm->body.len == 0) {
-        printf("Error: Empty request body\n");
+        log_api(true, "\tError: Empty request body\n");
         mg_http_reply(c, 400, "Content-Type: application/json\r\n", 
                       "{\"error\": \"Empty request body\"}\n");
         return;
       }
       
-      printf("Body size: %lu, Body: %.*s\n", (unsigned long)hm->body.len, 
+      log_api(true, "\tBody size: %lu, Body: %.*s\n", (unsigned long)hm->body.len, 
              (int)hm->body.len, hm->body.buf);
       
       // Parse username from JSON body
       char *username_ptr = mg_json_get_str(hm->body, "$.name");
       if (!username_ptr) {
-        printf("Error: Failed to parse username from JSON\n");
+        log_api(true, "\tError: Failed to parse username from JSON\n");
         mg_http_reply(c, 400, "Content-Type: application/json\r\n", 
                       "{\"error\": \"Missing username\"}\n");
         return;
       }
       
-      printf("Parsed username_ptr: %p\n", (void*)username_ptr);
+      log_api(true, "\tParsed username_ptr: %p\n", (void*)username_ptr);
       
       char username_buffer[256];
       memset(username_buffer, 0, sizeof(username_buffer));
       snprintf(username_buffer, sizeof(username_buffer) - 1, "%s", username_ptr);
       username_buffer[sizeof(username_buffer) - 1] = '\0';
       
-      printf("Username buffer: '%s'\n", username_buffer);
+      log_api(true, "\tUsername buffer: '%s'\n", username_buffer);
       
       string username(username_buffer);
-      printf("String username created: '%s'\n", username.c_str());
+      log_api(true, "\tString username created: '%s'\n", username.c_str());
       
       // Check if username already exists in market
       User* existingUser = market.getUser(username);
@@ -104,14 +128,14 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
       }
       
       // Create new user and add to market
-      printf("Creating new user...\n");
+      log_api(true, "\tCreating new user...\n");
       User newUser(username);
-      printf("New user created\n");
+      log_api(true, "\tNew user created\n");
       int userId = nextUserId++;
       usernameToId[username] = userId;
       
       if (market.addUser(newUser)) {
-        printf("Account created for user: %s with ID: %d\n", username.c_str(), userId);
+        log_api(true, "Account created for user: %s with ID: %d\n", username.c_str(), userId);
         idToUser[userId] = market.getUser(username);
         mg_http_reply(c, 200, "Content-Type: application/json\r\n", 
                       "{\"status\": \"success\", \"userId\": %d}\n", userId);
@@ -122,6 +146,55 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
       return;
 
      }
+
+    if (mg_match(hm->uri, mg_str("/api/signIn"), NULL)) {
+      if (!mg_match(hm->method, mg_str("POST"), NULL)) {
+        mg_http_reply(c, 405, "", "{\"error\": \"Method not allowed\"}\n");
+        return;
+      }
+      log_api(true, "Sign in request received\n");
+
+      // Validate body
+      if (hm->body.len == 0) {
+        log_api(true, "\tError: Empty request body\n");
+        mg_http_reply(c, 400, "Content-Type: application/json\r\n",
+                      "{\"error\": \"Empty request body\"}\n");
+        return;
+      }
+
+      log_api(true, "\tBody size: %lu, Body: %.*s\n", (unsigned long)hm->body.len,
+              (int)hm->body.len, hm->body.buf);
+
+      // Parse username from JSON body
+      char *username_ptr = mg_json_get_str(hm->body, "$.name");
+      if (!username_ptr) {
+        log_api(true, "\tError: Failed to parse username from JSON\n");
+        mg_http_reply(c, 400, "Content-Type: application/json\r\n",
+                      "{\"error\": \"Missing username\"}\n");
+        return;
+      }
+
+      char username_buffer[256];
+      memset(username_buffer, 0, sizeof(username_buffer));
+      snprintf(username_buffer, sizeof(username_buffer) - 1, "%s", username_ptr);
+      username_buffer[sizeof(username_buffer) - 1] = '\0';
+
+      string username(username_buffer);
+      log_api(true, "\tAttempting to sign in user: '%s'\n", username.c_str());
+
+      // Check if username exists in market
+      User* existingUser = market.getUser(username);
+      if (existingUser == NULL) {
+        mg_http_reply(c, 200, "Content-Type: application/json\r\n", "{\"error\": \"user_not_found\"}\n");
+        return;
+      }
+
+      // User exists, get their ID
+      int userId = usernameToId[username];
+      log_api(true, "User '%s' signed in with ID: %d\n", username.c_str(), userId);
+      mg_http_reply(c, 200, "Content-Type: application/json\r\n", "{\"status\": \"success\", \"userId\": %d}\n", userId);
+      return;
+    }
 
     if (mg_match(hm->uri, mg_str("/api/buy"), NULL)) {
       if (!mg_match(hm->method, mg_str("POST"), NULL)) {
@@ -135,7 +208,7 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
           return;
       }
 
-      printf("Buy order received: User %lu wants to buy %f shares of %s (%s)\n", 
+      log_api(true, "Buy order received: User %lu wants to buy %f shares of %s (%s)\n", 
              (unsigned long)req.user_id, req.shares, req.symbol, req.order_type);
 
       User* user = idToUser[(int)req.user_id];
@@ -187,7 +260,7 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
           return;
       }
 
-      printf("Sell order received: User %lu wants to sell %f shares of %s (%s)\n", 
+      log_api(true, "Sell order received: User %lu wants to sell %f shares of %s (%s)\n", 
              (unsigned long)req.user_id, req.shares, req.symbol, req.order_type);
 
       User* user = idToUser[(int)req.user_id];
@@ -239,7 +312,7 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
           return;
       }
 
-      printf("Cancel order received: User %lu wants to cancel orders for %s\n", 
+      log_api(true, "Cancel order received: User %lu wants to cancel orders for %s\n", 
              (unsigned long)req.user_id, req.symbol);
 
       // Get the stock from market
@@ -301,6 +374,17 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
 
 
 int main() {
+  // Initialize logging
+  logFile = fopen("api_usage.log", "a");
+  if (!logFile) {
+    printf("ERROR: Could not open api_usage.log for writing\n");
+  } else {
+    fprintf(logFile, "========== Market Server Started ==========\n");
+    fflush(logFile);
+    printf("Log file opened successfully at api_usage.log\n");
+    log_api(true, "Server initialization logging started\n");
+  }
+  
   // Initialize market, stocks, users
   
   // Add template stocks from frontend

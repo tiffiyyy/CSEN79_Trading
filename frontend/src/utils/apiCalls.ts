@@ -50,3 +50,11 @@ export function getBalance(): Promise<{ balance: number }> {
   const userId = getUserId();
   return callApi("/api/balance", "POST", { userId }) as Promise<{ balance: number }>;
 }
+export async function signInAccount(name: string) {
+  const response = await fetch("/api/signIn", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  return response.json();
+}

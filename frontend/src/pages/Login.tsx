@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { isAuthenticated, setAuthenticated, getCurrentUsername } from "../components/ProtectedRoute";
 import "./Login.css";
-import { createAccount, setUserId } from "../utils/apiCalls";
+import { createAccount, setUserId, signInAccount } from "../utils/apiCalls";
 
 export function Login() {
   const navigate = useNavigate();
@@ -45,15 +45,37 @@ export function Login() {
     }
   }, [username, navigate]);
 
-  const handleSignIn = useCallback(() => {
+  const handleSignIn = useCallback(async () => {
     setError("");
     const trimmed = username.trim();
     if (!trimmed) {
       setError("Enter your username");
       return;
     }
-    setAuthenticated(trimmed);
-    navigate("/selection");
+    try {
+      const result = await signInAccount(trimmed);
+      // Check for error from backend
+      if (result && typeof result === "object" && "error" in result) {
+        if (result.error === "user_not_found") {
+          setError("Username not found. Please create an account.");
+        } else {
+          setError("Failed to sign in. Please try again.");
+        }
+        return;
+      }
+
+      // Save the user ID from the response
+      if (result && typeof result === "object" && "userId" in result) {
+        const userId = result.userId as number;
+        setUserId(userId);
+      }
+
+      setAuthenticated(trimmed);
+      navigate("/selection");
+    } catch (err: unknown) {
+      console.error("Failed to sign in:", err);
+      setError("Failed to sign in. Please try again.");
+    }
   }, [username, navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {

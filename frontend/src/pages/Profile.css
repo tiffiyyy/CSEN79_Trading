@@ -33,6 +33,10 @@
   margin: 2rem auto;
 }
 
+.profile-page .transaction-history:first-of-type {
+  margin-bottom: 0.5rem;
+}
+
 .profile-page__logout {
   display: block;
   margin: 2rem auto 0;

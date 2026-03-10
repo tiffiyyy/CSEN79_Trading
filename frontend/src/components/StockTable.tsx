@@ -54,7 +54,14 @@ export function StockTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => (
+          {rows.length === 0 ? (
+            <tr>
+              <td colSpan={columns.length} className="stock-table__empty">
+                No symbols or companies match your search.
+              </td>
+            </tr>
+          ) : (
+          rows.map((row, i) => (
             <tr
               key={row.symbol ?? i}
               className={`stock-table__row ${row.symbol === selectedSymbol ? "stock-table__row--selected" : ""}`}
@@ -84,7 +91,7 @@ export function StockTable({
                 );
               })}
             </tr>
-          ))}
+          )))}
         </tbody>
       </table>
     </div>

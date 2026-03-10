@@ -71,6 +71,7 @@
 
 .transaction-history-table-wrap {
   width: 100%;
+  min-width: 600px;
   max-height: 420px;
   overflow-x: auto;
   overflow-y: auto;
@@ -80,9 +81,20 @@
 
 .transaction-history-table {
   width: 100%;
+  min-width: 600px;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.875rem;
 }
+
+/* Fixed column widths so Pending and Transaction History headers align */
+.transaction-history-table__th:nth-child(1) { width: 14%; }   /* Time */
+.transaction-history-table__th:nth-child(2) { width: 8%; }    /* Action */
+.transaction-history-table__th:nth-child(3) { width: 12%; }   /* Order Type */
+.transaction-history-table__th:nth-child(4) { width: 8%; }    /* Symbol */
+.transaction-history-table__th:nth-child(5) { width: 28%; }   /* Company */
+.transaction-history-table__th:nth-child(6) { width: 14%; }   /* Amount */
+.transaction-history-table__th:nth-child(7) { width: 16%; }   /* Balance Change */
 
 .transaction-history-table__th {
   position: sticky;
@@ -109,9 +121,33 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
+.transaction-history-table__row--clickable {
+  cursor: pointer;
+}
+
+.transaction-history-table__row--selected {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.transaction-history-table__row--selected:hover {
+  background: rgba(59, 130, 246, 0.25);
+}
+
+.transaction-table-panel__cancel-wrap {
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid #404040;
+}
+
+.transaction-table-panel__cancel-btn {
+  min-width: 10rem;
+}
+
 .transaction-history-table__cell {
   padding: 0.5rem 0.75rem;
   color: #e4e4e7;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .transaction-history-table__empty {

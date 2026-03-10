@@ -4,7 +4,7 @@ import { getCurrentUsername } from "../components/ProtectedRoute";
 import { StockTable, type StockRow } from "../components/StockTable";
 import { InventorySlot, type Holding } from "../components/InventorySlot";
 import { addTransaction } from "../utils/transactionStorage";
-import { placeBuyOrder, placeSellOrder, cancelOrder, getBalance } from "../utils/apiCalls";
+import { placeBuyOrder, placeSellOrder, getBalance } from "../utils/apiCalls";
 import "./Selection.css";
 
 const SAMPLE_ETFS: StockRow[] = [
@@ -30,8 +30,8 @@ const DEMO_HOLDINGS: Holding[] = [
 export function Selection() {
   const navigate = useNavigate();
   const currentUsername = getCurrentUsername() ?? "-";
-  const action = ["-", "Buy", "Sell", "Cancel"];
-  const order = ["-", "Limit Order", "Market Order", "Cancel Order"];
+  const action = ["-", "Buy", "Sell"];
+  const order = ["-", "Limit Order", "Market Order"];
   const [selectedAction, setSelectedAction] = useState("-");
   const [selectedOrder, setSelectedOrder] = useState("-");
   const [numShares, setNumShares] = useState("");
@@ -39,6 +39,7 @@ export function Selection() {
   const [symbolSearch, setSymbolSearch] = useState("");
   const [holdings, setHoldings] = useState<Holding[]>(DEMO_HOLDINGS);
   const [accountBalance, setAccountBalance] = useState(0);
+  const [limitPrice, setLimitPrice] = useState("");
 
   const fetchBalance = async () => {
     try {
@@ -53,15 +54,20 @@ export function Selection() {
     fetchBalance();
   }, []);
 
-  const filteredEtfs = symbolSearch.trim()
-    ? SAMPLE_ETFS.filter((row) =>
-        row.symbol.toLowerCase().includes(symbolSearch.trim().toLowerCase())
+  const q = symbolSearch.trim().toLowerCase();
+  const filteredEtfs = q
+    ? SAMPLE_ETFS.filter(
+        (row) =>
+          row.symbol.toLowerCase().startsWith(q) ||
+          row.company.toLowerCase().startsWith(q)
       )
     : SAMPLE_ETFS;
 
   const numSharesVal = Number(numShares) || 0;
   const pricePerShare = selectedRow?.price ?? 0;
-  const orderValue = numSharesVal * pricePerShare;
+  const effectivePrice =
+    selectedOrder === "Limit Order" ? Number(limitPrice) || 0 : pricePerShare;
+  const orderValue = numSharesVal * effectivePrice;
 
   const inventoryRows = Math.max(4, Math.ceil(Math.max(holdings.length, 36) / 9));
   const totalSlots = inventoryRows * 9;
@@ -74,6 +80,7 @@ export function Selection() {
     amountBoughtSold: number;
     symbol: string;
     company: string;
+    status?: "PENDING" | "COMPLETED";
   }) => {
     addTransaction(currentUsername, {
       action: payload.action,
@@ -83,6 +90,7 @@ export function Selection() {
       symbol: payload.symbol,
       company: payload.company,
       timestamp: Date.now(),
+      status: payload.action === "Buy" || payload.action === "Sell" ? "PENDING" : payload.status ?? "COMPLETED",
     });
   };
 
@@ -139,9 +147,6 @@ export function Selection() {
           symbol,
           company,
         });
-      } else if (selectedAction === "Cancel") {
-        await cancelOrder(symbol, orderType, numSharesVal);
-        recordTransaction({ action: "Cancel", balanceChange: 0, amountBoughtSold: 0, symbol, company });
       }
       await fetchBalance();
       navigate("/transaction");
@@ -162,11 +167,11 @@ export function Selection() {
           <div className="selection-bazaar-panel__search">
             <input
               type="text"
-              placeholder="Search by symbol..."
+              placeholder="Search by symbol or name..."
               value={symbolSearch}
               onChange={(e) => setSymbolSearch(e.target.value)}
               className="selection-bazaar-panel__search-input"
-              aria-label="Search by symbol"
+              aria-label="Search by symbol or name"
             />
           </div>
           <div className="selection-bazaar-panel__content">
@@ -211,9 +216,31 @@ export function Selection() {
                 className="numShares"
               />
             </div>
+            {selectedOrder === "Limit Order" && (
+              <div className="selections">
+                <p>PRICE</p>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={limitPrice}
+                  min={1}
+                  step={1}
+                  onChange={(e) => setLimitPrice(e.target.value)}
+                  className="numShares"
+                  aria-label="Limit price"
+                />
+              </div>
+            )}
             <div className="selections">
               <p>ORDER TYPE</p>
-              <select value={selectedOrder} onChange={(e) => setSelectedOrder(e.target.value)}>
+              <select
+                value={selectedOrder}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setSelectedOrder(next);
+                  if (next !== "Limit Order") setLimitPrice("");
+                }}
+              >
                 {order.map((o) => (
                   <option key={o} value={o}>{o}</option>
                 ))}
@@ -229,7 +256,7 @@ export function Selection() {
                 : "Value Here"}
             </p>
             <p className="est-value__hint">
-              {selectedRow ? `${numSharesVal} × $${pricePerShare.toFixed(2)}` : "Select an ETF and enter num shares"}
+              {selectedRow ? `${numSharesVal} × $${effectivePrice.toFixed(2)}` : "Select an ETF and enter num shares"}
             </p>
             <button 
               disabled={selectedAction === "-" || !selectedRow || numSharesVal <= 0} 
@@ -252,7 +279,7 @@ export function Selection() {
                 key={holdings[i]?.id ?? `empty-${i}`}
                 holding={holdings[i] ?? null}
                 isSpecialSlot={i === totalSlots - 1}
-                onStarClick={i === totalSlots - 1 ? () => setAccountBalance((b) => b + 1) : undefined}
+                onStarClick={i === totalSlots - 1 ? (amount) => setAccountBalance((b) => b + amount) : undefined}
               />
             ))}
           </div>

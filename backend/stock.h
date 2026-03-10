@@ -45,9 +45,9 @@ class Stock {
         void buyMarketOrder(Order *order); 
         // execute sell market order 
         void sellMarketOrder(Order *order); 
-        // pushes buy order onto the buy pq 
+        // pushes buy order onto the buy pq (limit order) 
         void placeBuyOrder(Order* order);
-        // pushes sell order onto the sell pq 
+        // pushes sell order onto the sell pq (limit order) 
         void placeSellOrder(Order* order);
         // 
         void executeOrder(Order* order);

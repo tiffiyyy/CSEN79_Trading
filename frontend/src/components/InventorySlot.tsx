@@ -1,10 +1,12 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import "./InventorySlot.css";
 
-const STAR_BURST_COUNT = 24;
-const PLUS_ONE_COUNT = 8;
+const STAR_BURST_COUNT = 48;
+const PLUS_ONE_COUNT = 20;
 const BURST_DURATION_MS = 800;
 const PLUS_ONE_DURATION_MS = 2200;
+const STAR_AMOUNT_MIN = 10;
+const STAR_AMOUNT_MAX = 237;
 
 export interface Holding {
   id: string;
@@ -20,10 +22,15 @@ export interface Holding {
 interface InventorySlotProps {
   holding?: Holding | null;
   isSpecialSlot?: boolean;
-  onStarClick?: () => void;
+  onStarClick?: (amount: number) => void;
 }
 
-interface Burst { id: number; x: number; y: number }
+interface Burst {
+  id: number;
+  x: number;
+  y: number;
+  amount?: number;
+}
 
 export function InventorySlot({ holding, isSpecialSlot, onStarClick }: InventorySlotProps) {
   const [popupOpen, setPopupOpen] = useState(false);
@@ -35,7 +42,10 @@ export function InventorySlot({ holding, isSpecialSlot, onStarClick }: Inventory
   const closePopup = useCallback(() => setPopupOpen(false), []);
 
   const handleStarClick = useCallback((e: React.MouseEvent) => {
-    onStarClick?.();
+    const amount =
+      STAR_AMOUNT_MIN +
+      Math.floor(Math.random() * (STAR_AMOUNT_MAX - STAR_AMOUNT_MIN + 1));
+    onStarClick?.(amount);
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const x = rect.left + rect.width / 2;
     const y = rect.top + rect.height / 2;
@@ -47,7 +57,7 @@ export function InventorySlot({ holding, isSpecialSlot, onStarClick }: Inventory
     }, BURST_DURATION_MS);
     timeoutsRef.current.set(id, t);
     const plusId = nextBurstIdRef.current++;
-    setPlusOnes((prev) => [...prev, { id: plusId, x, y }]);
+    setPlusOnes((prev) => [...prev, { id: plusId, x, y, amount }]);
     const tPlus = setTimeout(() => {
       setPlusOnes((prev) => prev.filter((b) => b.id !== plusId));
     }, PLUS_ONE_DURATION_MS);
@@ -152,6 +162,7 @@ export function InventorySlot({ holding, isSpecialSlot, onStarClick }: Inventory
             const distance = 40 + Math.random() * 80;
             const dx = Math.cos(angle) * distance;
             const dy = Math.sin(angle) * distance;
+            const label = plus.amount != null ? `+$${plus.amount}` : "+$1";
             return (
               <span
                 key={i}
@@ -165,7 +176,7 @@ export function InventorySlot({ holding, isSpecialSlot, onStarClick }: Inventory
                   } as React.CSSProperties & { "--dx": string; "--dy": string }
                 }
               >
-                +$1
+                {label}
               </span>
             );
           })}

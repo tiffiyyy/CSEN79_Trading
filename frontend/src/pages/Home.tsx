@@ -31,9 +31,12 @@ export function Home() {
     if (!cracksVisible && e.target === e.currentTarget) setCracksVisible(true);
   };
 
-  const filteredEtfs = symbolSearch.trim()
-    ? SAMPLE_ETFS.filter((row) =>
-        row.symbol.toLowerCase().includes(symbolSearch.trim().toLowerCase())
+  const q = symbolSearch.trim().toLowerCase();
+  const filteredEtfs = q
+    ? SAMPLE_ETFS.filter(
+        (row) =>
+          row.symbol.toLowerCase().startsWith(q) ||
+          row.company.toLowerCase().startsWith(q)
       )
     : SAMPLE_ETFS;
 
@@ -153,11 +156,11 @@ export function Home() {
               <div className="bazaar-panel__search">
                 <input
                   type="text"
-                  placeholder="Search by symbol..."
+                  placeholder="Search by symbol or name..."
                   value={symbolSearch}
                   onChange={(e) => setSymbolSearch(e.target.value)}
                   className="bazaar-panel__search-input"
-                  aria-label="Search by symbol"
+                  aria-label="Search by symbol or name"
                 />
               </div>
               <div className="bazaar-panel__content">

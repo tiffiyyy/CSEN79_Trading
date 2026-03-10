@@ -37,7 +37,7 @@ void Stock::buyMarketOrder(Order *order) {
     int price; 
     int qty; 
     order->status = PENDING; 
-    while (order->quantity > 0 && order->buyOrSell == BUY) {
+    while (order->quantity > 0 && order->buyOrSell == BUY  && !sellOrders.empty()) {
         // if the top sell order cannot completely fulfill the buy order 
         if (sellOrder->quantity < order->quantity) {
             qty = std::min(sellOrder->quantity, order->quantity); 
@@ -75,7 +75,7 @@ void Stock::sellMarketOrder(Order *order) {
     int price; 
     int qty; 
     order->status = PENDING; 
-    while (order->quantity > 0 && order->buyOrSell == SELL) {
+    while (order->quantity > 0 && order->buyOrSell == SELL && !buyOrders.empty()) {
         // if the top sell order cannot completely fulfill the buy order 
         if (buyOrder->quantity < order->quantity) {
             qty = std::min(buyOrder->quantity, order->quantity); 
@@ -104,7 +104,7 @@ void Stock::sellMarketOrder(Order *order) {
 }
 
 
-// pushes buy order onto the buy pq 
+// pushes buy order onto the buy pq (limit order) 
 void Stock::placeBuyOrder(Order* order) {
     if (!order) return;
     order->status = PENDING;
@@ -112,7 +112,7 @@ void Stock::placeBuyOrder(Order* order) {
 }
 
 
-// pushes sell order onto the sell pq 
+// pushes sell order onto the sell pq (limit order) 
 void Stock::placeSellOrder(Order* order) {
     if (!order) return;
     order->status = PENDING;

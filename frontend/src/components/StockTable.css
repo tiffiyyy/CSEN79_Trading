@@ -57,6 +57,12 @@
   color: #e4e4e7;
 }
 
+.stock-table__empty {
+  text-align: center;
+  color: #71717a;
+  padding: 2rem;
+}
+
 .stock-table__up {
   color: #22c55e;
 }

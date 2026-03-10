@@ -15,14 +15,22 @@ function formatBalanceChange(n: number): string {
 
 export interface TransactionHistoryRowProps {
   transaction: TransactionRecord;
+  selected?: boolean;
+  onSelect?: () => void;
 }
 
-export function TransactionHistoryRow({ transaction: t }: TransactionHistoryRowProps) {
+export function TransactionHistoryRow({ transaction: t, selected, onSelect }: TransactionHistoryRowProps) {
   const amountPrefix = t.action === "Buy" ? "+" : t.action === "Sell" ? "-" : "";
   const amountClass = t.action === "Buy" ? "transaction-history-table__buy" : t.action === "Sell" ? "transaction-history-table__sell" : "";
 
   return (
-    <tr className="transaction-history-table__row">
+    <tr
+      className={`transaction-history-table__row${selected ? " transaction-history-table__row--selected" : ""}${onSelect ? " transaction-history-table__row--clickable" : ""}`}
+      onClick={onSelect}
+      role={onSelect ? "button" : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      onKeyDown={onSelect ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(); } } : undefined}
+    >
       <td className="transaction-history-table__cell">{formatTimeMilitary(t.timestamp)}</td>
       <td className="transaction-history-table__cell">{t.action}</td>
       <td className="transaction-history-table__cell">{t.orderType}</td>

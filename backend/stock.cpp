@@ -28,6 +28,91 @@ void Stock::balance(int price, Portfolio& buy, Portfolio& sell) {
     sell.balance += price; 
 } 
 
+
+// execute buy market order 
+void Stock::buyMarketOrder(Order *order) {
+    if (!order || order->ticker != ticker || order->quantity <= 0 || buyOrders.empty()) {
+        return;
+    } 
+    Order* sellOrder = sellOrders.top();
+    Portfolio& buyerPortfolio = order->user->getPortfolio();
+    Portfolio& sellerPortfolio = sellOrder->user->getPortfolio();
+    int price; 
+    int qty; 
+    order->status = PENDING; 
+    while (order->quantity > 0 && order->buyOrSell == BUY  && !sellOrders.empty()) {
+        // if the top sell order cannot completely fulfill the buy order 
+        if (sellOrder->quantity < order->quantity) {
+            setLastTradedPrice(sellOrder->price);
+            qty = std::min(sellOrder->quantity, order->quantity); 
+            price = sellOrder->quantity * sellOrder->price; 
+            balance(price, buyerPortfolio, sellerPortfolio); 
+            order->quantity -= qty; 
+            buyerPortfolio.addShares(order->ticker, qty); 
+            sellerPortfolio.removeShares(order->ticker, qty); 
+            sellOrder->quantity = 0; 
+            sellOrders.pop();
+            sellOrder = sellOrders.top();
+        }
+        // if the top sell order can fulfill the buy order 
+        else {
+            setLastTradedPrice(sellOrder->price);
+            price = order->quantity * sellOrder->price; 
+            balance(price, buyerPortfolio, sellerPortfolio); 
+            sellOrder->quantity -= order->quantity; 
+            buyerPortfolio.addShares(order->ticker, order->quantity); 
+            sellerPortfolio.removeShares(order->ticker, order->quantity); 
+            order->quantity = 0; 
+        }
+    }
+    if (order->quantity == 0) {
+        order->status = EXECUTED; 
+    }
+}
+
+
+// execute sell market order 
+void Stock::sellMarketOrder(Order *order) {
+    if (!order || order->ticker != ticker || order->quantity <= 0 || sellOrders.empty()) {
+        return;
+    } 
+    Order* buyOrder = buyOrders.top();
+    Portfolio& buyerPortfolio = buyOrder->user->getPortfolio();
+    Portfolio& sellerPortfolio = order->user->getPortfolio();
+    int price; 
+    int qty; 
+    order->status = PENDING; 
+    while (order->quantity > 0 && order->buyOrSell == SELL && !buyOrders.empty()) {
+        // if the top sell order cannot completely fulfill the buy order 
+        if (buyOrder->quantity < order->quantity) {
+            setLastTradedPrice(buyOrder->price);
+            qty = std::min(buyOrder->quantity, order->quantity); 
+            price = buyOrder->quantity * buyOrder->price; 
+            balance(price, buyerPortfolio, sellerPortfolio); 
+            order->quantity -= qty; 
+            buyerPortfolio.addShares(order->ticker, qty); 
+            sellerPortfolio.removeShares(order->ticker, qty); 
+            buyOrder->quantity = 0; 
+            buyOrders.pop();
+            buyOrder = buyOrders.top();
+        }
+        // if the top sell order can fulfill the buy order 
+        else {
+            setLastTradedPrice(buyOrder->price);
+            price = order->quantity * buyOrder->price; 
+            balance(price, buyerPortfolio, sellerPortfolio); 
+            buyOrder->quantity -= order->quantity; 
+            buyerPortfolio.addShares(order->ticker, order->quantity); 
+            sellerPortfolio.removeShares(order->ticker, order->quantity); 
+            order->quantity = 0; 
+        }
+    }
+    if (order->quantity == 0) {
+        order->status = EXECUTED; 
+    }
+}
+
+
 // pushes buy order onto the buy pq (limit order) 
 void Stock::placeBuyOrder(Order* order) {
     if (!order) return;
@@ -44,7 +129,7 @@ void Stock::placeSellOrder(Order* order) {
 }
 
 
-// 
+// execute limit order 
 void Stock::executeOrder(Order* incomingOrder) {
     if (!incomingOrder || incomingOrder->ticker != ticker || incomingOrder->quantity <= 0) {
         return;

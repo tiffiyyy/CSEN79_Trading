@@ -152,7 +152,7 @@ export function Home() {
 
           <div className={`bazaar-ui ${loadingDone ? "bazaar-ui--visible" : ""}`}>
             <div className="bazaar-panel bazaar-panel--top">
-              <div className="bazaar-panel__title">Bazaar → Trading</div>
+              <div className="bazaar-panel__title">Charles Swamp</div>
               <div className="bazaar-panel__search">
                 <input
                   type="text"

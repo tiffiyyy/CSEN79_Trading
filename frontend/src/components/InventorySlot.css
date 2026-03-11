@@ -227,19 +227,12 @@
 }
 
 .inventory-popup__graph {
-  min-height: 140px;
+  min-height: 120px;
   background: rgba(0, 0, 0, 0.25);
   border: 2px solid #404040;
   border-radius: 4px;
   margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.inventory-popup__graph-placeholder {
-  font-size: 0.8125rem;
-  color: #71717a;
+  padding: 0.5rem;
 }
 
 .inventory-popup__details {

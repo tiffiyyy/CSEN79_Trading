@@ -59,17 +59,3 @@ bool Market::placeOrder(Order* order) {
         return stock->executeOrder(order);
     }
 }
-
-void Market::matchTicker(const string& ticker){
-    Stock* stock = getStock(ticker);
-    if(!stock){
-        return; // Stock not found
-    }
-    while (true) {
-        pair<Order*, Order*> matchedOrders = stock->matchOrders();
-        if (!matchedOrders.first || !matchedOrders.second) {
-            break;
-        }
-        stock->setLastTradedPrice(matchedOrders.second->price);
-    }
-}

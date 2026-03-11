@@ -1,0 +1,72 @@
+.trendline {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 80px;
+}
+
+.trendline--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trendline__no-data {
+  font-size: 0.8125rem;
+  color: #71717a;
+}
+
+.trendline__svg {
+  width: 100%;
+  height: 100%;
+}
+
+.trendline__line {
+  stroke: #22c55e;
+  transition: stroke 0.3s;
+}
+
+.trendline--down .trendline__line {
+  stroke: #ef4444;
+}
+
+.trendline__fill {
+  opacity: 0.6;
+}
+
+.trendline__dot {
+  fill: #22c55e;
+  transition: fill 0.3s;
+}
+
+.trendline--down .trendline__dot {
+  fill: #ef4444;
+}
+
+.trendline__labels {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 0;
+  pointer-events: none;
+}
+
+.trendline__label {
+  font-size: 0.625rem;
+  color: #71717a;
+  background: rgba(26, 26, 26, 0.8);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.trendline__label--high {
+  color: #a3a3a3;
+}
+
+.trendline__label--low {
+  color: #a3a3a3;
+}

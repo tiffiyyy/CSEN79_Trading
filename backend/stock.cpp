@@ -31,7 +31,7 @@ void Stock::balance(int price, Portfolio& buy, Portfolio& sell) {
 
 // execute buy market order 
 void Stock::buyMarketOrder(Order *order) {
-    if (!order || order->ticker != ticker || order->quantity <= 0 || buyOrders.empty()) {
+    if (!order || order->ticker != ticker || order->quantity <= 0 || sellOrders.empty()) {
         return;
     } 
     Order* sellOrder = sellOrders.top();
@@ -52,6 +52,7 @@ void Stock::buyMarketOrder(Order *order) {
             sellerPortfolio.removeShares(order->ticker, qty); 
             sellOrder->quantity = 0; 
             sellOrders.pop();
+            if (sellOrders.empty()) break;
             sellOrder = sellOrders.top();
         }
         // if the top sell order can fulfill the buy order 
@@ -73,7 +74,7 @@ void Stock::buyMarketOrder(Order *order) {
 
 // execute sell market order 
 void Stock::sellMarketOrder(Order *order) {
-    if (!order || order->ticker != ticker || order->quantity <= 0 || sellOrders.empty()) {
+    if (!order || order->ticker != ticker || order->quantity <= 0 || buyOrders.empty()) {
         return;
     } 
     Order* buyOrder = buyOrders.top();
@@ -94,7 +95,9 @@ void Stock::sellMarketOrder(Order *order) {
             sellerPortfolio.removeShares(order->ticker, qty); 
             buyOrder->quantity = 0; 
             buyOrders.pop();
+            if (buyOrders.empty()) break;
             buyOrder = buyOrders.top();
+        
         }
         // if the top sell order can fulfill the buy order 
         else {
@@ -134,8 +137,15 @@ bool Stock::executeOrder(Order* incomingOrder) {
     if (!incomingOrder || incomingOrder->ticker != ticker || incomingOrder->quantity <= 0) {
         return false;
     }
-    if(incomingOrder->totalValue <=0 || incomingOrder->totalValue > incomingOrder->user->getPortfolio().balance){
-        return false;
+    if (incomingOrder->buyOrSell == BUY) {
+        double priceToCheck = incomingOrder->price;
+        if (priceToCheck == std::numeric_limits<double>::max() && !sellOrders.empty()) {
+            priceToCheck = sellOrders.top()->price;
+        }
+        double potentialCost = priceToCheck * incomingOrder->quantity;
+        if (potentialCost > incomingOrder->user->getPortfolio().balance) {
+            return false;
+        }
     }
 
     if (incomingOrder->buyOrSell == BUY) {
@@ -175,10 +185,6 @@ void Stock::cancelOrder(Order* order) {
     // any left over money offerred by the buy order will be returned to the user 
 // returns make_pair(buyOrder, sellOrder)
 pair<Order* , Order*> Stock::matchOrders() {
-
-    Order* buyOrder = buyOrders.top();
-    Order* sellOrder = sellOrders.top();
-    
     if (buyOrders.empty() || sellOrders.empty()) {
         return make_pair(nullptr, nullptr);
     }
@@ -190,8 +196,12 @@ pair<Order* , Order*> Stock::matchOrders() {
         sellOrders.pop();
     }
 
+    if (buyOrders.empty() || sellOrders.empty()) {
+        return make_pair(nullptr, nullptr);
+    }
 
-    
+    Order* buyOrder = buyOrders.top();
+    Order* sellOrder = sellOrders.top();
 
     if (buyOrder->price < sellOrder->price) {
         return make_pair(nullptr, nullptr);

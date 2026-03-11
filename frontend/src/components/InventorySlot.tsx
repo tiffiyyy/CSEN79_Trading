@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { TrendLine, generateMockPriceHistory } from "./TrendLine";
 import "./InventorySlot.css";
 
 const STAR_BURST_COUNT = 48;
@@ -17,6 +18,7 @@ export interface Holding {
   pricePerShare: number;
   change?: number;
   changePercent?: number;
+  priceHistory?: number[];
 }
 
 interface InventorySlotProps {
@@ -196,6 +198,13 @@ function HoldingDetailModal({ holding, onClose }: HoldingDetailModalProps) {
     if (e.target === e.currentTarget) onClose();
   };
 
+  const priceData = useMemo(() => {
+    if (holding.priceHistory && holding.priceHistory.length >= 2) {
+      return holding.priceHistory;
+    }
+    return generateMockPriceHistory(holding.pricePerShare, 20, 0.03);
+  }, [holding.priceHistory, holding.pricePerShare]);
+
   return (
     <div
       className="inventory-popup-backdrop"
@@ -219,9 +228,7 @@ function HoldingDetailModal({ holding, onClose }: HoldingDetailModalProps) {
         <p className="inventory-popup__symbol">{holding.symbol}</p>
 
         <div className="inventory-popup__graph">
-          <span className="inventory-popup__graph-placeholder">
-            Trend graph
-          </span>
+          <TrendLine data={priceData} height={120} showFill />
         </div>
 
         <dl className="inventory-popup__details">

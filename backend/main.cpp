@@ -236,7 +236,7 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
 
       // Place the order in market and match
       if (market.placeOrder(newOrder)) {
-        market.matchTicker(string(req.symbol));
+        user->addOrder(newOrder);
         mg_http_reply(c, 200, "Content-Type: application/json\r\n", 
                       "{\"status\": \"success\", \"message\": \"Buy order placed\"}\n");
       } else {
@@ -292,7 +292,7 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
 
       // Place the order in market and match
       if (market.placeOrder(newOrder)) {
-        market.matchTicker(string(req.symbol));
+        user->addOrder(newOrder);
         mg_http_reply(c, 200, "Content-Type: application/json\r\n", 
                       "{\"status\": \"success\", \"message\": \"Sell order placed\"}\n");
       } else {

@@ -45,7 +45,11 @@ class Stock {
         void placeBuyOrder(Order* order);
         // pushes sell order onto the sell pq (limit order) 
         void placeSellOrder(Order* order);
-        // 
+        // execute buy market order 
+        void buyMarketOrder(Order *order);
+        // execute sell market order 
+        void sellMarketOrder(Order *order); 
+        // execute limit order 
         bool executeOrder(Order* order);
         // cancels a pending limit order 
         void cancelOrder(Order* order); 

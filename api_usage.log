@@ -114,3 +114,195 @@ Create account request received
 	New user created
 Account created for user: zuh with ID: 2
 Buy order received: User 2 wants to buy 3.000000 shares of EFA (limit)
+========== Market Server Started ==========
+Server initialization logging started
+Initializing market with company accounts and liquidity...
+	- Created SPY_COMPANY with 1000000 shares at $100.00
+	- Created QQQ_COMPANY with 1000000 shares at $100.00
+	- Created IWM_COMPANY with 1000000 shares at $100.00
+	- Created VTI_COMPANY with 1000000 shares at $100.00
+	- Created VOO_COMPANY with 1000000 shares at $100.00
+	- Created EFA_COMPANY with 1000000 shares at $100.00
+	- Created EEM_COMPANY with 1000000 shares at $100.00
+	- Created GLD_COMPANY with 1000000 shares at $100.00
+	- Created BND_COMPANY with 1000000 shares at $100.00
+	- Created ARKK_COMPANY with 1000000 shares at $100.00
+	- Created XLF_COMPANY with 1000000 shares at $100.00
+Sign in request received
+	Body size: 14, Body: {"name":"cat"}
+	Parsed username_ptr: 0x600003918000
+	String username created: 'cat'
+	Attempting to sign in user: 'cat'
+Create account request received
+	Body size: 14, Body: {"name":"cat"}
+	Parsed username_ptr: 0x600003918010
+	String username created: 'cat'
+	Creating new user...
+	New user created
+Account created for user: cat with ID: 1
+========== Market Server Started ==========
+Server initialization logging started
+Initializing market with company accounts and liquidity...
+	- Created SPY_COMPANY with 1000000 shares at $100.00
+	- Created QQQ_COMPANY with 1000000 shares at $100.00
+	- Created IWM_COMPANY with 1000000 shares at $100.00
+	- Created VTI_COMPANY with 1000000 shares at $100.00
+	- Created VOO_COMPANY with 1000000 shares at $100.00
+	- Created EFA_COMPANY with 1000000 shares at $100.00
+	- Created EEM_COMPANY with 1000000 shares at $100.00
+	- Created GLD_COMPANY with 1000000 shares at $100.00
+	- Created BND_COMPANY with 1000000 shares at $100.00
+	- Created ARKK_COMPANY with 1000000 shares at $100.00
+	- Created XLF_COMPANY with 1000000 shares at $100.00
+Buy order received: User 1 wants to buy 1.000000 shares of ARKK (market)
+Buy order received: User 1 wants to buy 1.000000 shares of ARKK (limit)
+Buy order received: User 1 wants to buy 1.000000 shares of ARKK (limit)
+========== Market Server Started ==========
+Server initialization logging started
+Initializing market with company accounts and liquidity...
+	- Created SPY_COMPANY with 1000000 shares at $100.00
+	- Created QQQ_COMPANY with 1000000 shares at $100.00
+	- Created IWM_COMPANY with 1000000 shares at $100.00
+	- Created VTI_COMPANY with 1000000 shares at $100.00
+	- Created VOO_COMPANY with 1000000 shares at $100.00
+	- Created EFA_COMPANY with 1000000 shares at $100.00
+	- Created EEM_COMPANY with 1000000 shares at $100.00
+	- Created GLD_COMPANY with 1000000 shares at $100.00
+	- Created BND_COMPANY with 1000000 shares at $100.00
+	- Created ARKK_COMPANY with 1000000 shares at $100.00
+	- Created XLF_COMPANY with 1000000 shares at $100.00
+Buy order received: User 1 wants to buy 1.000000 shares of ARKK (limit)
+Buy order received: User 1 wants to buy 1.000000 shares of ARKK (market)
+========== Market Server Started ==========
+Server initialization logging started
+Initializing market with company accounts and liquidity...
+	- Created SPY_COMPANY with 1000000 shares at $100.00
+	- Created QQQ_COMPANY with 1000000 shares at $100.00
+	- Created IWM_COMPANY with 1000000 shares at $100.00
+	- Created VTI_COMPANY with 1000000 shares at $100.00
+	- Created VOO_COMPANY with 1000000 shares at $100.00
+	- Created EFA_COMPANY with 1000000 shares at $100.00
+	- Created EEM_COMPANY with 1000000 shares at $100.00
+	- Created GLD_COMPANY with 1000000 shares at $100.00
+	- Created BND_COMPANY with 1000000 shares at $100.00
+	- Created ARKK_COMPANY with 1000000 shares at $100.00
+	- Created XLF_COMPANY with 1000000 shares at $100.00
+Sign in request received
+	Body size: 14, Body: {"name":"cat"}
+	Parsed username_ptr: 0x600003720000
+	String username created: 'cat'
+	Attempting to sign in user: 'cat'
+Create account request received
+	Body size: 14, Body: {"name":"cat"}
+	Parsed username_ptr: 0x600003720010
+	String username created: 'cat'
+	Creating new user...
+	New user created
+Account created for user: cat with ID: 1
+Buy order received: User 1 wants to buy 2.000000 shares of BND (market)
+Buy order received: User 1 wants to buy 2.000000 shares of BND (market)
+========== Market Server Started ==========
+Server initialization logging started
+Initializing market with company accounts and liquidity...
+	- Created SPY_COMPANY with 1000000 shares at $100.00
+	- Created QQQ_COMPANY with 1000000 shares at $100.00
+	- Created IWM_COMPANY with 1000000 shares at $100.00
+	- Created VTI_COMPANY with 1000000 shares at $100.00
+	- Created VOO_COMPANY with 1000000 shares at $100.00
+	- Created EFA_COMPANY with 1000000 shares at $100.00
+	- Created EEM_COMPANY with 1000000 shares at $100.00
+	- Created GLD_COMPANY with 1000000 shares at $100.00
+	- Created BND_COMPANY with 1000000 shares at $100.00
+	- Created ARKK_COMPANY with 1000000 shares at $100.00
+	- Created XLF_COMPANY with 1000000 shares at $100.00
+Create account request received
+	Body size: 16, Body: {"name":"gumbo"}
+	Parsed username_ptr: 0x60000270c000
+	String username created: 'gumbo'
+	Creating new user...
+	New user created
+Account created for user: gumbo with ID: 1
+Buy order received: User 1 wants to buy 1.000000 shares of SPY (market)
+========== Market Server Started ==========
+Server initialization logging started
+Initializing market with company accounts and liquidity...
+	- Created SPY_COMPANY with 1000000 shares at $100.00
+	- Created QQQ_COMPANY with 1000000 shares at $100.00
+	- Created IWM_COMPANY with 1000000 shares at $100.00
+	- Created VTI_COMPANY with 1000000 shares at $100.00
+	- Created VOO_COMPANY with 1000000 shares at $100.00
+	- Created EFA_COMPANY with 1000000 shares at $100.00
+	- Created EEM_COMPANY with 1000000 shares at $100.00
+	- Created GLD_COMPANY with 1000000 shares at $100.00
+	- Created BND_COMPANY with 1000000 shares at $100.00
+	- Created ARKK_COMPANY with 1000000 shares at $100.00
+	- Created XLF_COMPANY with 1000000 shares at $100.00
+Create account request received
+	Body size: 16, Body: {"name":"gumbo"}
+	Parsed username_ptr: 0x6000017ac010
+	String username created: 'gumbo'
+	Creating new user...
+	New user created
+Account created for user: gumbo with ID: 1
+Buy order received: User 1 wants to buy 1.000000 shares of IWM (market)
+Buy order received: User 1 wants to buy 1.000000 shares of IWM (market)
+========== Market Server Started ==========
+Server initialization logging started
+Initializing market with company accounts and liquidity...
+	- Created SPY_COMPANY with 1000000 shares at $100.00
+	- Created QQQ_COMPANY with 1000000 shares at $100.00
+	- Created IWM_COMPANY with 1000000 shares at $100.00
+	- Created VTI_COMPANY with 1000000 shares at $100.00
+	- Created VOO_COMPANY with 1000000 shares at $100.00
+	- Created EFA_COMPANY with 1000000 shares at $100.00
+	- Created EEM_COMPANY with 1000000 shares at $100.00
+	- Created GLD_COMPANY with 1000000 shares at $100.00
+	- Created BND_COMPANY with 1000000 shares at $100.00
+	- Created ARKK_COMPANY with 1000000 shares at $100.00
+	- Created XLF_COMPANY with 1000000 shares at $100.00
+Create account request received
+	Body size: 16, Body: {"name":"gumbo"}
+	Parsed username_ptr: 0x600001ebc010
+	String username created: 'gumbo'
+	Creating new user...
+	New user created
+Account created for user: gumbo with ID: 1
+Buy order received: User 1 wants to buy 1.000000 shares of SPY (market)
+========== Market Server Started ==========
+Server initialization logging started
+Initializing market with company accounts and liquidity...
+	- Created SPY_COMPANY with 1000000 shares at $100.00
+	- Created QQQ_COMPANY with 1000000 shares at $100.00
+	- Created IWM_COMPANY with 1000000 shares at $100.00
+	- Created VTI_COMPANY with 1000000 shares at $100.00
+	- Created VOO_COMPANY with 1000000 shares at $100.00
+	- Created EFA_COMPANY with 1000000 shares at $100.00
+	- Created EEM_COMPANY with 1000000 shares at $100.00
+	- Created GLD_COMPANY with 1000000 shares at $100.00
+	- Created BND_COMPANY with 1000000 shares at $100.00
+	- Created ARKK_COMPANY with 1000000 shares at $100.00
+	- Created XLF_COMPANY with 1000000 shares at $100.00
+Sign in request received
+	Body size: 16, Body: {"name":"gumbo"}
+	Parsed username_ptr: 0x600003f58000
+	String username created: 'gumbo'
+	Attempting to sign in user: 'gumbo'
+Sign in request received
+	Body size: 16, Body: {"name":"gumbo"}
+	Parsed username_ptr: 0x600003f58010
+	String username created: 'gumbo'
+	Attempting to sign in user: 'gumbo'
+Create account request received
+	Body size: 16, Body: {"name":"gumbo"}
+	Parsed username_ptr: 0x600003f58020
+	String username created: 'gumbo'
+	Creating new user...
+	New user created
+Account created for user: gumbo with ID: 1
+Buy order received: User 1 wants to buy 1.000000 shares of SPY (market)
+Sign in request received
+	Body size: 16, Body: {"name":"gumbo"}
+	Parsed username_ptr: 0x600003f5c050
+	String username created: 'gumbo'
+	Attempting to sign in user: 'gumbo'
+User 'gumbo' signed in with ID: 1

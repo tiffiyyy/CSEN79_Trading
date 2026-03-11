@@ -215,3 +215,36 @@ Buy order received: User 1 wants to buy 12.000000 shares of EEM (limit)
 Buy order received: User 1 wants to buy 3.000000 shares of BND (market)
 Updated balance for user 1 by 20.00. New balance: 8520.00
 Updated balance for user 1 by 114.00. New balance: 8634.00
+========== Market Server Started ==========
+Server initialization logging started
+Initializing market with company accounts and liquidity...
+	- Created SPY_COMPANY with 1000000 shares at $100.00
+	- Created QQQ_COMPANY with 1000000 shares at $100.00
+	- Created IWM_COMPANY with 1000000 shares at $100.00
+	- Created VTI_COMPANY with 1000000 shares at $100.00
+	- Created VOO_COMPANY with 1000000 shares at $100.00
+	- Created EFA_COMPANY with 1000000 shares at $100.00
+	- Created EEM_COMPANY with 1000000 shares at $100.00
+	- Created GLD_COMPANY with 1000000 shares at $100.00
+	- Created BND_COMPANY with 1000000 shares at $100.00
+	- Created ARKK_COMPANY with 1000000 shares at $100.00
+	- Created XLF_COMPANY with 1000000 shares at $100.00
+Sign in request received
+	Body size: 16, Body: {"name":"gumbo"}
+	Parsed username_ptr: 0x600002df8000
+	String username created: 'gumbo'
+	Attempting to sign in user: 'gumbo'
+Create account request received
+	Body size: 16, Body: {"name":"gumbo"}
+	Parsed username_ptr: 0x600002dfc000
+	String username created: 'gumbo'
+	Creating new user...
+	New user created
+Account created for user: gumbo with ID: 1
+Sell order received: User 1 wants to sell 1.000000 shares of IWM (market)
+Sell order received: User 1 wants to sell 1.000000 shares of IWM (limit)
+Buy order received: User 1 wants to buy 1.000000 shares of IWM (market)
+Sell order received: User 1 wants to sell 2.000000 shares of IWM (market)
+Sell order received: User 1 wants to sell 2.000000 shares of IWM (limit)
+Sell order received: User 1 wants to sell 2.000000 shares of IWM (limit)
+Sell order received: User 1 wants to sell 1.000000 shares of IWM (limit)

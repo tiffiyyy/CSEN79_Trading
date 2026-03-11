@@ -77,6 +77,7 @@ void Stock::sellMarketOrder(Order *order) {
     if (!order || order->ticker != ticker || order->quantity <= 0 || buyOrders.empty()) {
         return;
     } 
+    if(order->user->getPortfolio().stockQuantities[order->ticker]<order->quantity)return;
     Order* buyOrder = buyOrders.top();
     Portfolio& buyerPortfolio = buyOrder->user->getPortfolio();
     Portfolio& sellerPortfolio = order->user->getPortfolio();
@@ -151,8 +152,10 @@ bool Stock::executeOrder(Order* incomingOrder) {
     if (incomingOrder->buyOrSell == BUY) {
         placeBuyOrder(incomingOrder);
     } else {
+        if(incomingOrder->user->getPortfolio().stockQuantities[incomingOrder->ticker]<incomingOrder->quantity)return false;
         placeSellOrder(incomingOrder);
     }
+    
 
     while (true) {
         pair<Order*, Order*> matchedOrders = matchOrders();

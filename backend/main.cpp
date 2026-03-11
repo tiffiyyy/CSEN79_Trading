@@ -596,36 +596,40 @@ int main() {
   // Initialize company users for each stock to provide initial liquidity.
   // Each "company" will own all of its stock and be ready to sell it.
   vector<string> tickers = {"SPY", "QQQ", "IWM", "VTI", "VOO", "EFA", "EEM", "GLD", "BND", "ARKK", "XLF"};
+  vector<double> initial_prices = {450.25, 385.5, 195.8, 235.0, 412.0, 68.5, 39.2, 185.4, 72.8, 42.6, 41.2};
   double initial_price = 100.0;
   int initial_shares = 1000000;
 
   log_api(true, "Initializing market with company accounts and liquidity...\n");
-  for (const string& ticker : tickers) {
-      string company_username = ticker + "_COMPANY";
-      market.addUser(User(company_username));
-      User* company_user = market.getUser(company_username);
-      if (company_user) {
-          // Give the company a lot of shares and money
-          company_user->getPortfolio().addShares(ticker, initial_shares);
-          company_user->getPortfolio().balance = 1000000000; // 1 billion dollars
 
-          // Create a standing sell order to provide liquidity, like an IPO
-          Order* sellOrder = new Order();
-          sellOrder->id = nextOrderId++;
-          sellOrder->user = company_user;
-          sellOrder->ticker = ticker;
-          sellOrder->buyOrSell = SELL;
-          sellOrder->status = PENDING;
-          sellOrder->price = initial_price; // Initial "IPO" price
-          sellOrder->quantity = initial_shares;
-          sellOrder->initialQuantity = initial_shares;
-          sellOrder->timestamp = time(NULL);
-          sellOrder->totalValue = 0;
-          sellOrder->executionPrice = 0;
+  for (size_t i = 0; i < tickers.size(); ++i) {
+    const string& ticker = tickers[i];
+    initial_price = initial_prices[i];
+    string company_username = ticker + "_COMPANY";
+    market.addUser(User(company_username));
+    User* company_user = market.getUser(company_username);
+    if (company_user) {
+        // Give the company a lot of shares and money
+        company_user->getPortfolio().addShares(ticker, initial_shares);
+        company_user->getPortfolio().balance = 1000000000; // 1 billion dollars
 
-          market.placeOrder(sellOrder);
-          log_api(true, "\t- Created %s with %d shares at $%.2f\n", company_username.c_str(), initial_shares, initial_price);
-      }
+        // Create a standing sell order to provide liquidity, like an IPO
+        Order* sellOrder = new Order();
+        sellOrder->id = nextOrderId++;
+        sellOrder->user = company_user;
+        sellOrder->ticker = ticker;
+        sellOrder->buyOrSell = SELL;
+        sellOrder->status = PENDING;
+        sellOrder->price = initial_price; // Initial "IPO" price
+        sellOrder->quantity = initial_shares;
+        sellOrder->initialQuantity = initial_shares;
+        sellOrder->timestamp = time(NULL);
+        sellOrder->totalValue = 0;
+        sellOrder->executionPrice = 0;
+
+        market.placeOrder(sellOrder);
+        log_api(true, "\t- Created %s with %d shares at $%.2f\n", company_username.c_str(), initial_shares, initial_price);
+    }
   }
 
   //START WEB SERVER

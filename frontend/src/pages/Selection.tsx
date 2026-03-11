@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getCurrentUsername } from "../components/ProtectedRoute";
 import { StockTable, type StockRow } from "../components/StockTable";
 import { InventorySlot, type Holding } from "../components/InventorySlot";
-import { placeBuyOrder, placeSellOrder, getBalance } from "../utils/apiCalls";
+import { placeBuyOrder, placeSellOrder, getBalance, getUserData, updateBalance } from "../utils/apiCalls";
 import "./Selection.css";
 
 const SAMPLE_ETFS: StockRow[] = [
@@ -20,12 +20,6 @@ const SAMPLE_ETFS: StockRow[] = [
   { symbol: "XLF", company: "Financial Select Sector SPDR", price: 41.2, change: 0.35, changePercent: 0.86 },
 ];
 
-const DEMO_HOLDINGS: Holding[] = [
-  { id: "1", symbol: "SPY", company: "SPDR S&P 500 ETF Trust", shares: 10, totalValue: 4502.5, pricePerShare: 450.25, change: 2.15, changePercent: 0.48 },
-  { id: "2", symbol: "QQQ", company: "Invesco QQQ Trust", shares: 5, totalValue: 1927.5, pricePerShare: 385.5, change: -1.2, changePercent: -0.31 },
-  { id: "3", symbol: "VTI", company: "Vanguard Total Stock Market ETF", shares: 20, totalValue: 4700, pricePerShare: 235.0, change: 1.5, changePercent: 0.64 },
-];
-
 export function Selection() {
   const navigate = useNavigate();
   const currentUsername = getCurrentUsername() ?? "-";
@@ -36,21 +30,25 @@ export function Selection() {
   const [numShares, setNumShares] = useState("");
   const [selectedRow, setSelectedRow] = useState<StockRow | null>(null);
   const [symbolSearch, setSymbolSearch] = useState("");
-  const [holdings, setHoldings] = useState<Holding[]>(DEMO_HOLDINGS);
+  const [holdings, setHoldings] = useState<Holding[]>([]);
   const [accountBalance, setAccountBalance] = useState(0);
   const [limitPrice, setLimitPrice] = useState("");
 
-  const fetchBalance = async () => {
+  const fetchData = async () => {
     try {
-      const response = await getBalance();
-      setAccountBalance(response.balance);
+      const [balanceResponse, holdingsResponse] = await Promise.all([
+        getBalance(),
+        getUserData(),
+      ]);
+      setAccountBalance(balanceResponse.balance);
+      setHoldings(holdingsResponse);
     } catch (error) {
-      console.error("Failed to fetch balance:", error);
+      console.error("Failed to fetch user data:", error);
     }
   };
 
   useEffect(() => {
-    fetchBalance();
+    fetchData();
   }, []);
 
   const q = symbolSearch.trim().toLowerCase();
@@ -73,33 +71,6 @@ export function Selection() {
 
   //const orderTypeLabel = selectedOrder === "-" ? "Market Order" : selectedOrder;
 
-  const handleBuyClick = async () => {
-    if (selectedAction !== "Buy" || !selectedRow || numSharesVal <= 0) return;
-    
-    try {
-      const orderType = selectedOrder === "Limit Order" ? "limit" : "market";
-      const price = orderType === 'limit' ? Number(limitPrice) : undefined;
-      await placeBuyOrder(selectedRow.symbol, orderType, numSharesVal, price);
-      
-      const newHolding: Holding = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        symbol: selectedRow.symbol,
-        company: selectedRow.company,
-        shares: numSharesVal,
-        totalValue: orderValue,
-        pricePerShare: selectedRow.price,
-        change: selectedRow.change,
-        changePercent: selectedRow.changePercent,
-      };
-      setHoldings((prev) => [...prev, newHolding]);
-      await fetchBalance();
-      navigate("/transaction");
-    } catch (error) {
-      console.error("Buy order failed:", error);
-      alert("Failed to place buy order. Please try again.");
-    }
-  };
-
   const handleTransactionSubmit = async () => {
     if (selectedAction === "-" || !selectedRow) return;
     
@@ -114,11 +85,21 @@ export function Selection() {
       } else if (selectedAction === "Sell") {
         await placeSellOrder(symbol, orderType, numSharesVal, price);
       }
-      await fetchBalance();
+      await fetchData();
       navigate("/transaction");
     } catch (error) {
       console.error(`${selectedAction} order failed:`, error);
       alert(`Failed to ${selectedAction.toLowerCase()} order. Please try again.`);
+    }
+  };
+
+  const handleStarClick = async (amount: number) => {
+    try {
+      const response = await updateBalance(amount);
+      setAccountBalance(response.balance);
+    } catch (error) {
+      console.error("Failed to update balance:", error);
+      alert("Failed to update balance. Please try again.");
     }
   };
 
@@ -226,7 +207,7 @@ export function Selection() {
             </p>
             <button 
               disabled={selectedAction === "-" || !selectedRow || numSharesVal <= 0} 
-              onClick={selectedAction === "Buy" && selectedRow && numSharesVal > 0 ? handleBuyClick : handleTransactionSubmit}
+              onClick={handleTransactionSubmit}
             >
               {selectedAction === "-" ? "Select an Action" : selectedAction}
             </button>
@@ -245,7 +226,7 @@ export function Selection() {
                 key={holdings[i]?.id ?? `empty-${i}`}
                 holding={holdings[i] ?? null}
                 isSpecialSlot={i === totalSlots - 1}
-                onStarClick={i === totalSlots - 1 ? (amount) => setAccountBalance((b) => b + amount) : undefined}
+                onStarClick={i === totalSlots - 1 ? handleStarClick : undefined}
               />
             ))}
           </div>

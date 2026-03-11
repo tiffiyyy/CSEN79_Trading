@@ -43,6 +43,7 @@ static int nextUserId = 1;
 static int nextOrderId = 1;
 static unordered_map<string, int> usernameToId;
 static unordered_map<int, User*> idToUser;
+static unordered_map<string, string> symbolToCompany;
 
 bool parse_order_request(struct mg_http_message *hm, struct OrderRequest *req) {
     // Zero out the memory so we don't end up with garbage data
@@ -98,6 +99,20 @@ bool parse_username(struct mg_http_message *hm, string& username) {
     log_api(true, "\tString username created: '%s'\n", username.c_str());
 
     return true;
+}
+
+void initialize_company_data() {
+    symbolToCompany["SPY"] = "SPDR S&P 500 ETF Trust";
+    symbolToCompany["QQQ"] = "Invesco QQQ Trust";
+    symbolToCompany["IWM"] = "iShares Russell 2000 ETF";
+    symbolToCompany["VTI"] = "Vanguard Total Stock Market ETF";
+    symbolToCompany["VOO"] = "Vanguard S&P 500 ETF";
+    symbolToCompany["EFA"] = "iShares MSCI EAFE ETF";
+    symbolToCompany["EEM"] = "iShares MSCI Emerging Markets ETF";
+    symbolToCompany["GLD"] = "SPDR Gold Shares";
+    symbolToCompany["BND"] = "Vanguard Total Bond Market ETF";
+    symbolToCompany["ARKK"] = "ARK Innovation ETF";
+    symbolToCompany["XLF"] = "Financial Select Sector SPDR";
 }
 
 // Connection event handler function
@@ -184,6 +199,65 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
       int userId = usernameToId[username];
       log_api(true, "User '%s' signed in with ID: %d\n", username.c_str(), userId);
       mg_http_reply(c, 200, "Content-Type: application/json\r\n", "{\"status\": \"success\", \"userId\": %d}\n", userId);
+      return;
+    }
+
+    if (mg_match(hm->uri, mg_str("/api/userData"), NULL)) {
+      if (!mg_match(hm->method, mg_str("POST"), NULL)) {
+        mg_http_reply(c, 405, "", "{\"error\": \"Method not allowed\"}\n");
+        return;
+      }
+
+      double user_id_double;
+      if (mg_json_get_num(hm->body, "$.userId", &user_id_double) == 0) {
+        mg_http_reply(c, 400, "Content-Type: application/json\r\n",
+                      "{\"error\": \"Missing userId\"}\n");
+        return;
+      }
+      int user_id = (int)user_id_double;
+
+      User* user = idToUser[user_id];
+      if (!user) {
+        mg_http_reply(c, 404, "Content-Type: application/json\r\n",
+                      "{\"error\": \"User not found\"}\n");
+        return;
+      }
+
+      const auto& stockQuantities = user->getPortfolio().stockQuantities;
+      string json_str = "[";
+      bool first = true;
+      for (const auto& pair : stockQuantities) {
+        const string& symbol = pair.first;
+        int shares = pair.second;
+
+        if (shares <= 0) continue;
+
+        if (!first) {
+            json_str += ",";
+        }
+        first = false;
+
+        Stock* stock = market.getStock(symbol);
+        double pricePerShare = stock ? stock->getLastTradedPrice() : 0.0;
+        
+        if (pricePerShare == 0.0) {
+            pricePerShare = 100.0; 
+        }
+
+        double totalValue = shares * pricePerShare;
+        string companyName = symbolToCompany.count(symbol) ? symbolToCompany[symbol] : "";
+
+        char buffer[1024];
+        mg_snprintf(buffer, sizeof(buffer),
+            "{%m:%m,%m:%m,%m:%m,%m:%d,%m:%g,%m:%g,%m:%g,%m:%g}",
+            MG_ESC("id"), MG_ESC(symbol.c_str()), MG_ESC("symbol"), MG_ESC(symbol.c_str()),
+            MG_ESC("company"), MG_ESC(companyName.c_str()), MG_ESC("shares"), shares,
+            MG_ESC("totalValue"), totalValue, MG_ESC("pricePerShare"), pricePerShare,
+            MG_ESC("change"), 0.0, MG_ESC("changePercent"), 0.0);
+        json_str += buffer;
+      }
+      json_str += "]";
+      mg_http_reply(c, 200, "Content-Type: application/json\r\n", "%s", json_str.c_str());
       return;
     }
 
@@ -440,6 +514,40 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
       return;
     }
 
+    if (mg_match(hm->uri, mg_str("/api/updateBalance"), NULL)) {
+      if (!mg_match(hm->method, mg_str("POST"), NULL)) {
+        mg_http_reply(c, 405, "", "{\"error\": \"Method not allowed\"}\n");
+        return;
+      }
+
+      double user_id_double;
+      if (mg_json_get_num(hm->body, "$.userId", &user_id_double) == 0) {
+        mg_http_reply(c, 400, "Content-Type: application/json\r\n",
+                      "{\"error\": \"Missing userId\"}\n");
+        return;
+      }
+      int user_id = (int)user_id_double;
+
+      double amount_to_add;
+      if (mg_json_get_num(hm->body, "$.amount", &amount_to_add) == 0) {
+        mg_http_reply(c, 400, "Content-Type: application/json\r\n",
+                      "{\"error\": \"Missing amount\"}\n");
+        return;
+      }
+
+      User* user = idToUser[user_id];
+      if (!user) {
+        mg_http_reply(c, 404, "Content-Type: application/json\r\n", "{\"error\": \"User not found\"}\n");
+        return;
+      }
+
+      user->getPortfolio().balance += amount_to_add;
+      log_api(true, "Updated balance for user %d by %.2f. New balance: %.2f\n", user_id, amount_to_add, user->getPortfolio().balance);
+      mg_http_reply(c, 200, "Content-Type: application/json\r\n",
+                    "{\"balance\": %.2f}\n", user->getPortfolio().balance);
+      return;
+    }
+
     // If they just go to domain then serve the app
     struct mg_http_serve_opts opts = {0};
     
@@ -469,6 +577,8 @@ int main() {
   }
   
   // Initialize market, stocks, users
+  
+  initialize_company_data();
   
   // Add template stocks from frontend
   market.addStock("SPY");

@@ -1,3 +1,5 @@
+import { type Holding } from "../components/InventorySlot";
+
 function callApi(endpoint: string, method: string, body?: Record<string, unknown>): Promise<unknown> {
   const options: RequestInit = {
     method,
@@ -57,6 +59,16 @@ export function cancelOrder(symbol: string, orderType: string = "", shares: numb
 export function getBalance(): Promise<{ balance: number }> {
   const userId = getUserId();
   return callApi("/api/balance", "POST", { userId }) as Promise<{ balance: number }>;
+}
+
+export function updateBalance(amount: number): Promise<{ balance: number }> {
+  const userId = getUserId();
+  return callApi("/api/updateBalance", "POST", { userId, amount }) as Promise<{ balance: number }>;
+}
+
+export function getUserData(): Promise<Holding[]> {
+  const userId = getUserId();
+  return callApi("/api/userData", "POST", { userId }) as Promise<Holding[]>;
 }
 export async function signInAccount(name: string) {
   const response = await fetch("/api/signIn", {

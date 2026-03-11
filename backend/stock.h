@@ -55,5 +55,6 @@ class Stock {
         void cancelOrder(Order* order); 
         // fulfill order
         pair<Order*, Order*> matchOrders();
+  
 };
 #endif

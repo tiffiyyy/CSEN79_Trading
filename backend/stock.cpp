@@ -129,10 +129,13 @@ void Stock::placeSellOrder(Order* order) {
 }
 
 
-// execute limit order 
-void Stock::executeOrder(Order* incomingOrder) {
+// 
+bool Stock::executeOrder(Order* incomingOrder) {
     if (!incomingOrder || incomingOrder->ticker != ticker || incomingOrder->quantity <= 0) {
-        return;
+        return false;
+    }
+    if(incomingOrder->totalValue <=0 || incomingOrder->totalValue > incomingOrder->user->getPortfolio().balance){
+        return false;
     }
 
     if (incomingOrder->buyOrSell == BUY) {
@@ -149,6 +152,7 @@ void Stock::executeOrder(Order* incomingOrder) {
         // Chosen policy: execute at resting sell price.
         setLastTradedPrice(matchedOrders.second->price);
     }
+    return true;
 }
 
 
@@ -171,6 +175,10 @@ void Stock::cancelOrder(Order* order) {
     // any left over money offerred by the buy order will be returned to the user 
 // returns make_pair(buyOrder, sellOrder)
 pair<Order* , Order*> Stock::matchOrders() {
+
+    Order* buyOrder = buyOrders.top();
+    Order* sellOrder = sellOrders.top();
+    
     if (buyOrders.empty() || sellOrders.empty()) {
         return make_pair(nullptr, nullptr);
     }
@@ -182,12 +190,8 @@ pair<Order* , Order*> Stock::matchOrders() {
         sellOrders.pop();
     }
 
-    if (buyOrders.empty() || sellOrders.empty()) {
-        return make_pair(nullptr, nullptr);
-    }
 
-    Order* buyOrder = buyOrders.top();
-    Order* sellOrder = sellOrders.top();
+    
 
     if (buyOrder->price < sellOrder->price) {
         return make_pair(nullptr, nullptr);

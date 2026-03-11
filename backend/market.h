@@ -26,7 +26,7 @@ class Market {
     User* getUser(const string& username);
     
     bool placeOrder(Order* order);
-    void matchTicker(const string& ticker);
+    //void matchTicker(const string& ticker);
 };
 
 

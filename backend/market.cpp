@@ -47,10 +47,7 @@ User* Market::getUser(const string& username){
 }
 
 bool Market::placeOrder(Order* order) {
-    if (!order) {
-        return false;
-    }
-    if (!order->user || order->quantity <= 0) {
+    if (!order || !order->user || order->quantity <= 0) {
         return false;
     }
 
@@ -58,37 +55,9 @@ bool Market::placeOrder(Order* order) {
     if (!stock) {
         return false; // Stock not found
     }
-
-    Portfolio& portfolio = order->user->getPortfolio();
-    
-    if (order->buyOrSell == BUY) {
-        // For buy orders, check for sufficient cash.
-        // This is a pre-check; the matching engine does the final check and transfer.
-        double pricePerShare = order->price;
-        
-        // For market orders, use last traded price for a rough check
-        if (pricePerShare <= 0 || pricePerShare == std::numeric_limits<double>::max()) {
-            pricePerShare = stock->getLastTradedPrice();
-            // If stock has never been traded, use a default or small price
-            if (pricePerShare <= 0) {
-                pricePerShare = 200.0; // Default estimate, needs to be high enough for market orders
-            }
-        }
-        
-        double requiredCash = pricePerShare * order->quantity;
-        if (portfolio.balance < requiredCash) {
-            return false; // Not enough cash
-        }
-    } else {
-        // For sell orders, check for sufficient shares.
-        if (portfolio.getShares(order->ticker) < order->quantity) {
-            return false; // Not enough shares
-        }
+    else{
+        return stock->executeOrder(order);
     }
-
-    order->user->addOrder(order);
-    stock->executeOrder(order);
-    return true;
 }
 
 void Market::matchTicker(const string& ticker){

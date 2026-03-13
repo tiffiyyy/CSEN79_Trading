@@ -179,6 +179,8 @@ void Stock::cancelOrder(Order* order) {
     // orders from the middle of the heap, which std::priority_queue doesn't support.
     // For now, we mark it as cancelled, and it will be ignored during matching.
     // This can lead to stale, cancelled orders accumulating in the queues.
+    // HOWEVER, whenever matchOrders is ran, any non-pending orders will be popped 
+    // off from the buy/sell priority queue. 
     return; 
 }
 

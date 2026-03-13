@@ -5,30 +5,31 @@
 class User;
 using namespace std;
 
-// action dropdown on frontend 
-// tiffany note: remove cancel from the frontend dropdown 
 enum OrderType {
-    BUY,
-    SELL
+    BUY,   // order to purchase shares
+    SELL   // order to sell shares
 };
-// order type dropdown on frontend
+
 enum OrderStatus {
-    PENDING,
-    EXECUTED,
-    CANCELLED
+    PENDING,   // queued in book, not yet filled
+    EXECUTED,  // fully or partially filled
+    CANCELLED  // user cancelled; no longer in book
 };
-// data structure "Order" containing information for each order 
+
+// Data structure "Order": one trading order (limit or market).
+// Invariance: id is unique; price >= 0; quantity > 0; initialQuantity > 0; 
+// users are assumed to be non-null for valid orders.
 struct Order {
-    User* user;             // pointer to the user who placed the order 
-    int id;                 // unique order id 
-    string ticker;          // ex. AAPL
-    OrderType buyOrSell; 
-    OrderStatus status;
-    double price;           // user's price offer per stock 
-    int quantity;           // number of shares 
-    long long timestamp;    // time when the order is placed 
-    int initialQuantity;
-    double totalValue;
-    double executionPrice;
+    User* user;             // pointer to the user who placed the order
+    int id;                 // unique order id
+    string ticker;          // symbol associated with each company (ex. AAPL) 
+    OrderType buyOrSell;    // defines whether the order is buying or selling stocks 
+    OrderStatus status;     // current state: PENDING, EXECUTED, or CANCELLED 
+    double price;           // user's price offer per stock
+    int quantity;           // number of shares (remaining)
+    long long timestamp;    // time when the order is placed
+    int initialQuantity;    // original quantity (unchanged after creation)
+    double totalValue;      // filled value so far
+    double executionPrice;  // price at which (partial) fill occurred
 };
 #endif

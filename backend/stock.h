@@ -23,37 +23,50 @@ struct SellOrderCmp {
     }
 };
 
-// "Stock" container storing the buy and sell orders per company  
+// "Stock" container: one company's buy/sell order priority queues and last traded price.
+// Invariance: ticker non-empty; buyOrders/sellOrders contain valid Order*; lastTradedPrice >= 0.
 class Stock {
     private:
-        string ticker;
-        priority_queue<Order*, vector<Order*>, BuyOrderCmp> buyOrders;
+        string ticker;                  // company symbol 
+        // priority queue of all buy orders associated with this company 
+        priority_queue<Order*, vector<Order*>, BuyOrderCmp> buyOrders; 
+        // priority queue of all sell orders associated with this company 
         priority_queue<Order*, vector<Order*>, SellOrderCmp> sellOrders;
-        double lastTradedPrice;         // last price paid per stock (determines change over time)
+        // last price paid per stock (determines change over time)
+        double lastTradedPrice; 
+    
     public:
-        // constructor 
+// CONSTRUCTOR 
+        // Pre: ticker non-empty. Post: empty buy/sell books, lastTradedPrice 0.
         Stock(string ticker);
 
-        // helper functions 
+// HELPER FUNCTIONS 
+        // Pre: none; setLastTradedPrice: newLastTradedPrice >= 0 
         string getTicker();
         double getLastTradedPrice();
         void setLastTradedPrice(double newLastTradedPrice);
 
-        // update balance 
-        void balance(int price, Portfolio& buy, Portfolio& sell); 
-        // pushes buy order onto the buy pq (limit order) 
+// MEMBER FUNCTIONS 
+        // Update buy/sell portfolios after trade at price. 
+        // Pre: price >= 0; buy/sell refer to counterparties.
+        void balance(int price, Portfolio& buy, Portfolio& sell);
+
+    // for the next five functions: Pre: order non-null, order->ticker == ticker.
+        // Push buy limit order onto buy queue. 
         void placeBuyOrder(Order* order);
-        // pushes sell order onto the sell pq (limit order) 
+        // Push sell limit order onto sell queue. 
         void placeSellOrder(Order* order);
-        // execute buy market order 
+        // Execute buy market order (match to best sell). 
         void buyMarketOrder(Order *order);
-        // execute sell market order 
-        void sellMarketOrder(Order *order); 
-        // execute limit order 
+        // Execute sell market order (match to best buy). 
+        void sellMarketOrder(Order *order);
+        // Attempts to execute one limit order, using matchOrders to fulfill orders. 
         bool executeOrder(Order* order);
-        // cancels a pending limit order 
-        void cancelOrder(Order* order); 
-        // fulfill order
+
+        // Mark a pending limit order cancelled. Pre: order exists this stock's pq.
+        void cancelOrder(Order* order);
+        // Pop best buy and best sell if they match; 
+        // return pair (buy, sell) or invalid pair if no match.
         pair<Order*, Order*> matchOrders();
   
 };

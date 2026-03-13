@@ -1,10 +1,14 @@
 #include "market.h"
-#include <iostream> 
+#include <chrono>
+#include <iostream>
+#include <memory>
+#include <random>
+#include <string>
+#include <vector>
 
 using namespace std;
 
-void runTest()
-{
+void runTest() {
     Market market;
 
     market.addStock("NVDA");
@@ -107,8 +111,97 @@ void runTest()
     }
 }
 
+void runStressTest(int orderCount) {
+    Market market;
+    vector<string> tickers = {"NVDA", "AAPL", "MCD", "SPY", "QQQ"};
+
+    for (const string& ticker : tickers) {
+        market.addStock(ticker);
+    }
+
+    const int userCount = 250;
+    const double initialBalance = 500000.0;
+    const int initialSharesPerTicker = 10000;
+
+    vector<string> usernames;
+    usernames.reserve(userCount);
+    for (int i = 0; i < userCount; ++i) {
+        usernames.push_back("user_" + to_string(i));
+        market.addUser(User(usernames.back()));
+    }
+
+    vector<User*> users;
+    users.reserve(userCount);
+    for (const string& username : usernames) {
+        User* user = market.getUser(username);
+        if (!user) continue;
+        user->getPortfolio().balance = initialBalance;
+        for (const string& ticker : tickers) {
+            user->getPortfolio().addShares(ticker, initialSharesPerTicker);
+        }
+        users.push_back(user);
+    }
+
+    if (users.empty()) {
+        cout << "Stress test setup failed: no users were created." << endl;
+        return;
+    }
+
+    vector<unique_ptr<Order>> orders;
+    orders.reserve(orderCount);
+
+    mt19937 rng(42);
+    uniform_int_distribution<int> userDist(0, static_cast<int>(users.size()) - 1);
+    uniform_int_distribution<int> tickerDist(0, static_cast<int>(tickers.size()) - 1);
+    uniform_int_distribution<int> sideDist(0, 1);
+    uniform_int_distribution<int> qtyDist(1, 50);
+    uniform_real_distribution<double> priceDist(50.0, 300.0);
+
+    int successCount = 0;
+    int failureCount = 0;
+
+    auto start = chrono::steady_clock::now();
+
+    for (int i = 0; i < orderCount; ++i) {
+        auto order = make_unique<Order>();
+        order->id = i + 1;
+        order->user = users[userDist(rng)];
+        order->ticker = tickers[tickerDist(rng)];
+        order->buyOrSell = sideDist(rng) == 0 ? BUY : SELL;
+        order->status = PENDING;
+        order->price = priceDist(rng);
+        order->quantity = qtyDist(rng);
+        order->initialQuantity = order->quantity;
+        order->timestamp = i + 1;
+        order->totalValue = 0.0;
+        order->executionPrice = 0.0;
+
+        bool placed = market.placeOrder(order.get());
+        if (placed) {
+            order->user->addOrder(order.get());
+            ++successCount;
+        } else {
+            ++failureCount;
+        }
+
+        orders.push_back(move(order));
+    }
+
+    auto end = chrono::steady_clock::now();
+    auto elapsedMs = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    double elapsedSec = elapsedMs / 1000.0;
+    double throughput = elapsedSec > 0 ? static_cast<double>(orderCount) / elapsedSec : 0.0;
+
+    cout << "Stress test complete" << endl;
+    cout << "Orders attempted: " << orderCount << endl;
+    cout << "Orders succeeded: " << successCount << endl;
+    cout << "Orders failed: " << failureCount << endl;
+    cout << "Elapsed: " << elapsedMs << " ms" << endl;
+    cout << "Throughput: " << throughput << " orders/sec" << endl;
+}
+
 int main() {
-    runTest();
+    runStressTest(100000);
     return 0;
 }
 
